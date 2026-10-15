@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة عيادات الأونلاين - جدول المواعيد والمنسقين</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; direction: rtl; color: #333; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h2, h3 { text-align: center; color: #2c3e50; }
+        
+        /* الأقسام والنماذج */
+        .section-box { background: #fafbfc; padding: 20px; border-radius: 10px; border: 1px solid #e1e8ed; margin-bottom: 25px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #444; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        
+        .btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: bold; width: 100%; transition: 0.2s; }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+
+        /* احصائيات سريعة (KPIs) */
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .kpi-card { background: #eef2f3; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #dcdcdc; }
+        .kpi-card h4 { margin: 0; font-size: 14px; color: #555; }
+        .kpi-card span { font-size: 22px; font-weight: bold; color: #007bff; display: block; margin-top: 5px; }
+
+        /* الجدول */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #e1e8ed; padding: 10px; text-align: center; font-size: 14px; }
+        th { background-color: #007bff; color: white; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        
+        .badge { padding: 5px 10px; border-radius: 4px; color: white; font-size: 12px; font-weight: bold; }
+        .bg-success { background: #28a745; }
+        .bg-warning { background: #ffc107; color: #333; }
+        .bg-danger { background: #dc3545; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🏥 نظام إدارة مجمع العيادات (حجوزات المنسقين والدكاترة)</h2>
+
+    <!-- لوحة المؤشرات الإحصائية (KPIs) -->
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <h4>إجمالي الحجوزات والحالات</h4>
+            <span id="totalCases">0</span>
+        </div>
+        <div class="kpi-card">
+            <h4>تم حل المشكلة</h4>
+            <span id="resolvedCases" style="color: #28a745;">0</span>
+        </div>
+        <div class="kpi-card">
+            <h4>قيد المتابعة</h4>
+            <span id="pendingCases" style="color: #e67e22;">0</span>
+        </div>
+    </div>
+
+    <!-- نموذج تسجيل حجز أو حالة جديدة -->
+    <div class="section-box">
+        <h3>📝 تسجيل حجز موعد / حالة جديدة</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>اسم المريض:</label>
+                <input type="text" id="patientName" placeholder="أدخل اسم المريض">
+            </div>
+            <div class="form-group">
+                <label>رقم الهوية:</label>
+                <input type="text" id="patientId" placeholder="رقم الهوية الوطنية أو الجواز">
+            </div>
+            <div class="form-group">
+                <label>رقم الجوال:</label>
+                <input type="text" id="patientPhone" placeholder="05xxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>الفرع:</label>
+                <select id="clinicBranch">
+                    <option value="معشي">معشي</option>
+                    <option value="الوسام">الوسام</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الطبيب المعالج:</label>
+                <select id="doctorName">
+                    <option value="د. أحمد">د. أحمد</option>
+                    <option value="د. سارة">د. سارة</option>
+                    <option value="د. محمد">د. محمد</option>
+                    <option value="د. فاطمة">د. فاطمة</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>اسم المنسق:</label>
+                <select id="coordinatorName">
+                    <option value="مصطفى">مصطفى</option>
+                    <option value="أمينة">أمينة</option>
+                    <option value="مؤمن">مؤمن</option>
+                    <option value="وهبة">وهبة</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>حالة المتابعة / المشكلة:</label>
+                <select id="caseStatus">
+                    <option value="قيد المتابعة">قيد المتابعة 🟡</option>
+                    <option value="تم حل المشكلة">تم حل المشكلة 🟢</option>
+                    <option value="لم يتم الحل">لم يتم الحل 🔴</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-success" onclick="addBooking()">حفظ وإضافة الموعد</button>
+    </div>
+
+    <!-- جدول الحجوزات والحالات -->
+    <div class="section-box">
+        <h3>📋 سجل المواعيد والحالات النشطة</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>التاريخ والوقت</th>
+                    <th>المريض</th>
+                    <th>رقم الهوية</th>
+                    <th>الجوال</th>
+                    <th>الفرع</th>
+                    <th>الطبيب</th>
+                    <th>المنسق</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+                <!-- يتم تعبئة السجلات هنا -->
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    let bookings = JSON.parse(localStorage.getItem("clinic_bookings")) || [];
+
+    function renderBookings() {
+        let tbody = document.getElementById("bookingsTableBody");
+        tbody.innerHTML = "";
+        
+        let total = bookings.length;
+        let resolved = 0;
+        let pending = 0;
+
+        if (total === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="color: #777;">لا توجد مواعيد أو حالات مسجلة حتى الآن</td></tr>`;
+        }
+
+        bookings.forEach((item, index) => {
+            if (item.status === "تم حل المشكلة") resolved++;
+            else pending++;
+
+            let badgeClass = "bg-warning";
+            if (item.status === "تم حل المشكلة") badgeClass = "bg-success";
+            if (item.status === "لم يتم الحل") badgeClass = "bg-danger";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td><b>${item.name}</b></td>
+                    <td>${item.idNum}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.branch}</td>
+                    <td>${item.doctor}</td>
+                    <td>${item.coordinator}</td>
+                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("totalCases").innerText = total;
+        document.getElementById("resolvedCases").innerText = resolved;
+        document.getElementById("pendingCases").innerText = pending;
+    }
+
+    function addBooking() {
+        let name = document.getElementById("patientName").value.trim();
+        let idNum = document.getElementById("patientId").value.trim();
+        let phone = document.getElementById("patientPhone").value.trim();
+        let branch = document.getElementById("clinicBranch").value;
+        let doctor = document.getElementById("doctorName").value;
+        let coordinator = document.getElementById("coordinatorName").value;
+        let status = document.getElementById("caseStatus").value;
+
+        if (!name || !idNum || !phone) {
+            alert("الرجاء إدخال بيانات المريض (الاسم، الهوية، الجوال) كاملة!");
+            return;
+        }
+
+        let now = new Date();
+        let dateStr = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+
+        let newBooking = {
+            date: dateStr,
+            name: name,
+            idNum: idNum,
+            phone: phone,
+            branch: branch,
+            doctor: doctor,
+            coordinator: coordinator,
+            status: status
+        };
+
+        bookings.unshift(newBooking);
+        localStorage.setItem("clinic_bookings", JSON.stringify(bookings));
+
+        // تفريغ الحقول
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientId").value = "";
+        document.getElementById("patientPhone").value = "";
+
+        renderBookings();
+        alert("تم حفظ الموعد والحالة بنجاح!");
+    }
+
+    renderBookings();
+</script>
+
+</body>
+</html>
