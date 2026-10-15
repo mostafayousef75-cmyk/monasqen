@@ -30,9 +30,10 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; direction: rtl; transition: background-color 0.3s, color 0.3s; }
         .container { max-width: 1450px; margin: auto; background: var(--container-bg); color: var(--text-color); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: background-color 0.3s, color 0.3s; }
         
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h2, h3 { color: var(--text-color); }
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        h2, h3 { color: var(--text-color); margin: 0; }
         
+        .header-actions { display: flex; gap: 10px; align-items: center; }
         .theme-toggle-btn { background: none; border: 2px solid var(--border-color); color: var(--text-color); font-size: 20px; padding: 6px 14px; border-radius: 50px; cursor: pointer; transition: 0.2s; }
         .theme-toggle-btn:hover { background: rgba(128,128,128,0.2); }
 
@@ -57,14 +58,18 @@
         .btn-warning:hover { background: #e0a800; }
         .btn-danger { background: #dc3545; color: white; padding: 6px 10px; font-size: 12px; }
         .btn-danger:hover { background: #c82333; }
+        .btn-export { background: #17a2b8; color: white; padding: 6px 12px; font-size: 13px; }
+        .btn-export:hover { background: #138496; }
+        .btn-import { background: #6c757d; color: white; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+        .btn-import:hover { background: #5a6268; }
 
         .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .kpi-card { background: var(--box-bg); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
         .kpi-card h4 { margin: 0; font-size: 14px; color: var(--text-color); opacity: 0.8; }
         .kpi-card span { font-size: 22px; font-weight: bold; color: #007bff; display: block; margin-top: 5px; }
 
-        .search-box { margin-bottom: 15px; display: flex; gap: 10px; }
-        .search-box input { flex: 1; }
+        .search-box { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .search-box input { flex: 1; min-width: 200px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; color: var(--text-color); }
         th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; font-size: 13px; }
         th { background-color: #007bff; color: white; }
@@ -85,7 +90,13 @@
 <div class="container">
     <div class="header-flex">
         <h2>🏥 نظام إدارة العيادات بماجستى وجداول الأطباء والمنسقين</h2>
-        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="تغيير الوضع المظلم/الفاتح">🌙</button>
+        <div class="header-actions">
+            <button class="btn btn-export" onclick="exportToCSV()" title="تحميل نسخة احتياطية إكسل">📥 تصدير السجلات</button>
+            <label class="btn btn-import" title="استعادة سجلات من ملف احتياطي">
+                📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importFromJSON(event)" style="display: none;">
+            </label>
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="تغيير الوضع المظلم/الفاتح">🌙</button>
+        </div>
     </div>
 
     <!-- شريط التنقل بين الصفحات -->
@@ -129,12 +140,12 @@
                     <input type="text" id="patientName" placeholder="أدخل اسم المريض">
                 </div>
                 <div class="form-group">
-                    <label>رقم الهوية:</label>
-                    <input type="text" id="patientId" placeholder="رقم الهوية الوطنية">
-                </div>
-                <div class="form-group">
                     <label>رقم الجوال:</label>
                     <input type="text" id="patientPhone" placeholder="05xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهوية:</label>
+                    <input type="text" id="patientId" placeholder="رقم الهوية الوطنية">
                 </div>
                 <div class="form-group">
                     <label>رقم الملف:</label>
@@ -208,15 +219,15 @@
         <div class="section-box">
             <h3>📋 سجل متابعة المنسقين والعملاء (الكل)</h3>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض، الهوية، رقم الملف، المنسق، أو المشكلة..." onkeyup="renderAll()">
+                <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض، الجوال، الهوية، رقم الملف، المنسق، أو المشكلة..." onkeyup="renderAll()">
             </div>
             <table>
                 <thead>
                     <tr>
                         <th>التاريخ والوقت</th>
                         <th>المريض</th>
-                        <th>الهوية</th>
                         <th>الجوال</th>
+                        <th>الهوية</th>
                         <th>رقم الملف</th>
                         <th>التواصل</th>
                         <th>الفرع</th>
@@ -243,8 +254,8 @@
                     <tr>
                         <th>التاريخ والوقت</th>
                         <th>المريض</th>
-                        <th>الهوية</th>
                         <th>رقم الجوال (متكرر)</th>
+                        <th>الهوية</th>
                         <th>رقم الملف (متكرر)</th>
                         <th>التواصل</th>
                         <th>الفرع</th>
@@ -265,37 +276,37 @@
     <!-- 2. صفحات الأطباء -->
     <div id="docMahmoud" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. محمود</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
     </div>
     <div id="docSamy" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. سامى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
     </div>
     <div id="docAbdullah" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. عبد الله</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
     </div>
     <div id="docMarwan" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. مروان</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
     </div>
     <div id="docEngy" class="view-section">
         <h3>👩‍⚕️ حالات المواعيد الخاصة بـ: د. إنجى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
     </div>
     <div id="docDermatology" class="view-section">
         <h3>🩺 حالات المواعيد الخاصة بـ: الجلدية</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
     </div>
     <div id="docOther" class="view-section">
         <h3>📌 حالات المواعيد الخاصة بـ: أخرى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
     </div>
 
 </div>
 
 <script>
-    let bookings = JSON.parse(localStorage.getItem("clinic_master_bookings_v10")) || [];
+    let bookings = JSON.parse(localStorage.getItem("clinic_master_bookings_v11")) || [];
 
     let currentTheme = localStorage.getItem("clinic_theme") || "light";
     document.body.setAttribute("data-theme", currentTheme);
@@ -384,6 +395,7 @@
         let filtered = bookings.filter(item => {
             let docStr = getDoctorDisplayName(item).toLowerCase();
             return (item.name && item.name.toLowerCase().includes(searchFilter)) || 
+                   (item.phone && item.phone.includes(searchFilter)) ||
                    (item.idNum && item.idNum.includes(searchFilter)) || 
                    (item.fileNum && item.fileNum.toLowerCase().includes(searchFilter)) ||
                    (item.problem && item.problem.toLowerCase().includes(searchFilter)) ||
@@ -403,8 +415,8 @@
                     <tr>
                         <td>${item.date}</td>
                         <td><b>${item.name}</b></td>
-                        <td>${item.idNum}</td>
                         <td>${item.phone}</td>
+                        <td>${item.idNum}</td>
                         <td><b>${item.fileNum || '-'}</b></td>
                         <td>${item.contact || 'اتصال'}</td>
                         <td>${item.branch}</td>
@@ -467,8 +479,8 @@
                 <tr style="background-color: rgba(220, 53, 69, 0.05);">
                     <td>${item.date}</td>
                     <td><b>${item.name}</b></td>
-                    <td>${item.idNum}</td>
                     <td><b style="color: #dc3545;">${item.phone} 🔄</b></td>
+                    <td>${item.idNum}</td>
                     <td><b style="color: #dc3545;">${item.fileNum || '-'} 🔄</b></td>
                     <td>${item.contact || 'اتصال'}</td>
                     <td>${item.branch}</td>
@@ -513,8 +525,8 @@
                 <tr>
                     <td>${item.date}</td>
                     <td><b>${item.name}</b></td>
-                    <td>${item.idNum}</td>
                     <td>${item.phone}</td>
+                    <td>${item.idNum}</td>
                     <td><b>${item.fileNum || '-'}</b></td>
                     <td>${item.contact || 'اتصال'}</td>
                     <td>${item.branch}</td>
@@ -532,10 +544,49 @@
         });
     }
 
+    // دوال تصدير واستيراد البيانات الاحتياطية
+    function exportToCSV() {
+        if (bookings.length === 0) {
+            alert("لا توجد بيانات لتصديرها!");
+            return;
+        }
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bookings, null, 2));
+        let downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "clinic_backup_" + new Date().toISOString().slice(0,10) + ".json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importFromJSON(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    if (confirm("هل أنت متأكد من استعادة هذه البيانات؟ سيتم دمجها أو استبدال السجلات الحالية.")) {
+                        bookings = importedData;
+                        localStorage.setItem("clinic_master_bookings_v11", JSON.stringify(bookings));
+                        renderAll();
+                        alert("تم استعادة البيانات بنجاح!");
+                    }
+                } else {
+                    alert("ملف غير صالح!");
+                }
+            } catch (err) {
+                alert("حدث خطأ أثناء قراءة الملف!");
+            }
+        };
+        reader.readAsText(file);
+    }
+
     function saveBooking() {
         let name = document.getElementById("patientName").value.trim();
-        let idNum = document.getElementById("patientId").value.trim();
         let phone = document.getElementById("patientPhone").value.trim();
+        let idNum = document.getElementById("patientId").value.trim();
         let fileNum = document.getElementById("fileNumber").value.trim();
         let contact = document.getElementById("contactMethod").value;
         let branch = document.getElementById("clinicBranch").value;
@@ -548,8 +599,8 @@
         let problem = document.getElementById("patientProblem").value.trim();
         let editIndex = parseInt(document.getElementById("editIndex").value);
 
-        if (!name || !idNum || !phone) {
-            alert("الرجاء إدخال بيانات المريض الأساسية (الاسم، الهوية، الجوال)!");
+        if (!name || !phone || !idNum) {
+            alert("الرجاء إدخال بيانات المريض الأساسية (الاسم، الجوال، الهوية)!");
             return;
         }
 
@@ -571,7 +622,7 @@
         let now = new Date();
         let dateStr = now.toLocaleDateString('ar-EG', {year: 'numeric', month: '2-digit', day: '2-digit'}) + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
 
-        let record = { date: dateStr, name, idNum, phone, fileNum, contact, branch, doctor, doctorOther, status, adminStatus, adminNote, coordinator, problem };
+        let record = { date: dateStr, name, phone, idNum, fileNum, contact, branch, doctor, doctorOther, status, adminStatus, adminNote, coordinator, problem };
 
         if (editIndex === -1) {
             bookings.unshift(record);
@@ -581,7 +632,7 @@
             alert("تم تحديث البيانات بنجاح!");
         }
 
-        localStorage.setItem("clinic_master_bookings_v10", JSON.stringify(bookings));
+        localStorage.setItem("clinic_master_bookings_v11", JSON.stringify(bookings));
         resetForm();
         renderAll();
     }
@@ -589,66 +640,6 @@
     function editBooking(index) {
         let item = bookings[index];
         document.getElementById("patientName").value = item.name;
-        document.getElementById("patientId").value = item.idNum;
         document.getElementById("patientPhone").value = item.phone;
-        document.getElementById("fileNumber").value = item.fileNum || "";
-        document.getElementById("contactMethod").value = item.contact || "اتصال";
-        document.getElementById("clinicBranch").value = item.branch;
-        document.getElementById("doctorName").value = item.doctor || "د. محمود";
-        checkDoctorOther();
-        if(item.doctor === "أخرى") {
-            document.getElementById("doctorOtherInput").value = item.doctorOther || "";
-        }
-        document.getElementById("caseStatus").value = item.status || "حجز";
-        document.getElementById("adminStatus").value = item.adminStatus || "قيد الانتظار";
-        checkAdminOther();
-        if(item.adminStatus === "أخرى") {
-            document.getElementById("adminNoteInput").value = item.adminNote || "";
-        } else {
-            document.getElementById("adminNoteInput").value = item.adminNote || "";
-        }
-        document.getElementById("coordinatorName").value = item.coordinator || "";
-        document.getElementById("patientProblem").value = item.problem || "";
-        
-        document.getElementById("editIndex").value = index;
-        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
-        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
-        document.getElementById("cancelBtn").style.display = "block";
-        
-        switchView('mainView');
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    function deleteBooking(index) {
-        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
-            bookings.splice(index, 1);
-            localStorage.setItem("clinic_master_bookings_v10", JSON.stringify(bookings));
-            renderAll();
-            alert("تم الحذف بنجاح.");
-        }
-    }
-
-    function resetForm() {
-        document.getElementById("patientName").value = "";
-        document.getElementById("patientId").value = "";
-        document.getElementById("patientPhone").value = "";
-        document.getElementById("fileNumber").value = "";
-        document.getElementById("patientProblem").value = "";
-        document.getElementById("coordinatorName").value = "";
-        document.getElementById("doctorOtherInput").value = "";
-        document.getElementById("adminNoteInput").value = "";
-        document.getElementById("doctorName").selectedIndex = 0;
-        document.getElementById("adminStatus").selectedIndex = 0;
-        checkDoctorOther();
-        checkAdminOther();
-        document.getElementById("editIndex").value = "-1";
-        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
-        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد";
-        document.getElementById("cancelBtn").style.display = "none";
-    }
-
-    renderAll();
-</script>
-
-</body>
-</html>
+        document.getElementById("patientId").value = item.idNum;
+        document.getElementById("fileNumber").value
