@@ -5,20 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة العيادات وجداول الأطباء - عن بُعد</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; direction: rtl; color: #333; }
-        .container { max-width: 1350px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h2, h3 { text-align: center; color: #2c3e50; }
-        
-        /* شريط التنقل بين الصفحات */
-        .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; border-bottom: 2px solid #ddd; padding-bottom: 15px; }
-        .tab-btn { background: #e9ecef; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; color: #495057; transition: 0.2s; }
-        .tab-btn.active, .tab-btn:hover { background: #007bff; color: white; }
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #white;
+            --text-color: #333;
+            --box-bg: #fafbfc;
+            --border-color: #e1e8ed;
+            --input-bg: #fff;
+            --input-text: #333;
+            --table-even: #f8f9fa;
+        }
 
-        .section-box { background: #fafbfc; padding: 20px; border-radius: 10px; border: 1px solid #e1e8ed; margin-bottom: 25px; }
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --box-bg: #2d2d2d;
+            --border-color: #444;
+            --input-bg: #333;
+            --input-text: #fff;
+            --table-even: #252525;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; direction: rtl; transition: 0.3s; }
+        .container { max-width: 1350px; margin: auto; background: var(--container-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h2 { color: var(--text-color); margin: 0; }
+        
+        /* زر المظهر الليلي */
+        .theme-toggle-btn { background: none; border: 2px solid var(--border-color); color: var(--text-color); font-size: 20px; padding: 6px 12px; border-radius: 50px; cursor: pointer; transition: 0.2s; }
+        .theme-toggle-btn:hover { background: rgba(0,0,0,0.1); }
+
+        /* شريط التنقل بين الصفحات */
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        .tab-btn { background: var(--box-bg); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; color: var(--text-color); transition: 0.2s; }
+        .tab-btn.active, .tab-btn:hover { background: #007bff; color: white; border-color: #007bff; }
+
+        .section-box { background: var(--box-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px; transition: 0.3s; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; }
-        label { margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #444; }
-        input, select, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        label { margin-bottom: 5px; font-weight: bold; font-size: 14px; color: var(--text-color); }
+        input, select, textarea { padding: 10px; border: 1px solid var(--border-color); background-color: var(--input-bg); color: var(--input-text); border-radius: 6px; font-size: 14px; font-family: inherit; }
         textarea { resize: vertical; height: 40px; }
         
         .btn { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; }
@@ -32,16 +60,16 @@
 
         /* المؤشرات الإحصائية */
         .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .kpi-card { background: #eef2f3; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #dcdcdc; }
-        .kpi-card h4 { margin: 0; font-size: 14px; color: #555; }
+        .kpi-card { background: var(--box-bg); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
+        .kpi-card h4 { margin: 0; font-size: 14px; color: var(--text-color); opacity: 0.8; }
         .kpi-card span { font-size: 22px; font-weight: bold; color: #007bff; display: block; margin-top: 5px; }
 
         .search-box { margin-bottom: 15px; display: flex; gap: 10px; }
         .search-box input { flex: 1; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #e1e8ed; padding: 10px; text-align: center; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; color: var(--text-color); }
+        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; font-size: 14px; }
         th { background-color: #007bff; color: white; }
-        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:nth-child(even) { background-color: var(--table-even); }
         
         .badge { padding: 5px 10px; border-radius: 4px; color: white; font-size: 12px; font-weight: bold; }
         .bg-success { background: #28a745; }
@@ -52,10 +80,13 @@
         .view-section.active-view { display: block; }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
 <div class="container">
-    <h2>🏥 نظام إدارة العيادات وجداول الأطباء والمنسقين</h2>
+    <div class="header-flex">
+        <h2>🏥 نظام إدارة العيادات وجداول الأطباء والمنسقين</h2>
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="تغيير الوضع المظلم/الفاتح">🌙</button>
+    </div>
 
     <!-- شريط الانتقال بين الصفحات -->
     <div class="nav-tabs">
@@ -213,7 +244,20 @@
 </div>
 
 <script>
-    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v6")) || [];
+    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v7")) || [];
+
+    // تفعيل الوضع الليلي المحفوظ مسبقاً
+    let currentTheme = localStorage.getItem("clinic_theme") || "light";
+    document.body.setAttribute("data-theme", currentTheme);
+    document.getElementById("themeToggleBtn").innerText = currentTheme === "dark" ? "☀️" : "🌙";
+
+    function toggleTheme() {
+        let theme = document.body.getAttribute("data-theme");
+        let newTheme = theme === "light" ? "dark" : "light";
+        document.body.setAttribute("data-theme", newTheme);
+        localStorage.setItem("clinic_theme", newTheme);
+        document.getElementById("themeToggleBtn").innerText = newTheme === "dark" ? "☀️" : "🌙";
+    }
 
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
@@ -354,7 +398,7 @@
             alert("تم تحديث البيانات بنجاح!");
         }
 
-        localStorage.setItem("clinic_bookings_v6", JSON.stringify(bookings));
+        localStorage.setItem("clinic_bookings_v7", JSON.stringify(bookings));
         resetForm();
         renderAll();
     }
@@ -362,39 +406,4 @@
     function editBooking(index) {
         let item = bookings[index];
         document.getElementById("patientName").value = item.name;
-        document.getElementById("patientId").value = item.idNum;
-        document.getElementById("patientPhone").value = item.phone;
-        document.getElementById("fileNumber").value = item.fileNum || "";
-        document.getElementById("clinicBranch").value = item.branch;
-        document.getElementById("doctorName").value = item.doctor;
-        document.getElementById("coordinatorName").value = item.coordinator;
-        document.getElementById("caseStatus").value = item.status;
-        document.getElementById("patientProblem").value = item.problem || "";
-        
-        document.getElementById("editIndex").value = index;
-        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
-        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
-        document.getElementById("cancelBtn").style.display = "block";
-        
-        switchView('mainView');
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    function deleteBooking(index) {
-        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
-            bookings.splice(index, 1);
-            localStorage.setItem("clinic_bookings_v6", JSON.stringify(bookings));
-            renderAll();
-            alert("تم الحذف بنجاح.");
-        }
-    }
-
-    function resetForm() {
-        document.getElementById("patientName").value = "";
-        document.getElementById("patientId").value = "";
-        document.getElementById("patientPhone").value = "";
-        document.getElementById("fileNumber").value = "";
-        document.getElementById("patientProblem").value = "";
-        document.getElementById("editIndex").value = "-1";
-        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
-        document.getElementById("saveBtn").innerText = "حفظ وإضافة الم
+        document.getElementById("patientId").value
