@@ -6,7 +6,7 @@
     <title>نظام إدارة العيادات وجداول الأطباء - عن بُعد</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; direction: rtl; color: #333; }
-        .container { max-width: 1250px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .container { max-width: 1350px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         h2, h3 { text-align: center; color: #2c3e50; }
         
         /* شريط التنقل بين الصفحات */
@@ -25,8 +25,10 @@
         .btn:hover { background: #0056b3; }
         .btn-success { background: #28a745; width: 100%; padding: 12px; }
         .btn-success:hover { background: #218838; }
-        .btn-warning { background: #ffc107; color: #333; padding: 6px 10px; font-size: 12px; }
+        .btn-warning { background: #ffc107; color: #333; padding: 6px 10px; font-size: 12px; margin-left: 5px; }
         .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; padding: 6px 10px; font-size: 12px; }
+        .btn-danger:hover { background: #c82333; }
 
         /* المؤشرات الإحصائية */
         .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
@@ -55,7 +57,7 @@
 <div class="container">
     <h2>🏥 نظام إدارة العيادات وجداول الأطباء والمنسقين</h2>
 
-    <!-- شريط الانتقال بين لوحة المنسقين وصفحات الأطباء -->
+    <!-- شريط الانتقال بين الصفحات -->
     <div class="nav-tabs">
         <button class="tab-btn active" onclick="switchView('mainView')">📋 لوحة المنسقين الرئيسية</button>
         <button class="tab-btn" onclick="switchView('docMahmoud')">👨‍⚕️ د. محمود</button>
@@ -101,6 +103,10 @@
                 <div class="form-group">
                     <label>رقم الجوال:</label>
                     <input type="text" id="patientPhone" placeholder="05xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>رقم الملف:</label>
+                    <input type="text" id="fileNumber" placeholder="رقم ملف المريض بالعيادة">
                 </div>
                 <div class="form-group">
                     <label>الفرع:</label>
@@ -151,7 +157,7 @@
         <div class="section-box">
             <h3>📋 سجل متابعة المنسقين والعملاء (الكل)</h3>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض، الهوية، أو مشكلة العميل..." onkeyup="renderAll()">
+                <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض، الهوية، رقم الملف، أو المشكلة..." onkeyup="renderAll()">
             </div>
             <table>
                 <thead>
@@ -160,12 +166,13 @@
                         <th>المريض</th>
                         <th>الهوية</th>
                         <th>الجوال</th>
+                        <th>رقم الملف</th>
                         <th>الفرع</th>
                         <th>الطبيب</th>
                         <th>مشكلة العميل</th>
                         <th>المنسق</th>
                         <th>الحالة</th>
-                        <th>إجراء</th>
+                        <th>إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="bookingsTableBody"></tbody>
@@ -176,37 +183,37 @@
     <!-- 2. صفحات الأطباء -->
     <div id="docMahmoud" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. محمود</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
     </div>
     <div id="docSamy" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. سامى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
     </div>
     <div id="docAbdullah" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. عبد الله</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
     </div>
     <div id="docMarwan" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. مروان</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
     </div>
     <div id="docEngy" class="view-section">
         <h3>👩‍⚕️ حالات المواعيد الخاصة بـ: د. إنجى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
     </div>
     <div id="docDermatology" class="view-section">
         <h3>🩺 حالات المواعيد الخاصة بـ: الجلدية</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
     </div>
     <div id="docOther" class="view-section">
         <h3>📌 حالات المواعيد الخاصة بـ: أخرى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>رقم الملف</th><th>الفرع</th><th>مشكلة العميل</th><th>المنسق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
     </div>
 
 </div>
 
 <script>
-    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v4")) || [];
+    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v6")) || [];
 
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
@@ -240,6 +247,7 @@
         let filtered = bookings.filter(item => 
             item.name.toLowerCase().includes(searchFilter) || 
             item.idNum.includes(searchFilter) || 
+            item.fileNum.toLowerCase().includes(searchFilter) ||
             item.problem.toLowerCase().includes(searchFilter) ||
             item.doctor.toLowerCase().includes(searchFilter)
         );
@@ -250,7 +258,7 @@
         });
 
         if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="10" style="color: #777;">لا توجد بيانات مطابقة</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="color: #777;">لا توجد بيانات مطابقة</td></tr>`;
         }
 
         filtered.forEach(item => {
@@ -263,12 +271,16 @@
                     <td><b>${item.name}</b></td>
                     <td>${item.idNum}</td>
                     <td>${item.phone}</td>
+                    <td><b>${item.fileNum || '-'}</b></td>
                     <td>${item.branch}</td>
                     <td>${item.doctor}</td>
-                    <td style="max-width: 200px; word-break: break-word;">${item.problem || '-'}</td>
+                    <td style="max-width: 180px; word-break: break-word;">${item.problem || '-'}</td>
                     <td>${item.coordinator}</td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                    <td><button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button></td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
+                        <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
+                    </td>
                 </tr>
             `;
         });
@@ -286,7 +298,7 @@
         let docItems = bookings.filter(item => item.doctor === docName);
 
         if (docItems.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="color: #777;">لا توجد حالات مسجلة لهذا الطبيب حتى الآن</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" style="color: #777;">لا توجد حالات مسجلة لهذا الطبيب حتى الآن</td></tr>`;
             return;
         }
 
@@ -300,11 +312,15 @@
                     <td><b>${item.name}</b></td>
                     <td>${item.idNum}</td>
                     <td>${item.phone}</td>
+                    <td><b>${item.fileNum || '-'}</b></td>
                     <td>${item.branch}</td>
-                    <td style="max-width: 200px; word-break: break-word;">${item.problem || '-'}</td>
+                    <td style="max-width: 180px; word-break: break-word;">${item.problem || '-'}</td>
                     <td>${item.coordinator}</td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                    <td><button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button></td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
+                        <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
+                    </td>
                 </tr>
             `;
         });
@@ -314,6 +330,7 @@
         let name = document.getElementById("patientName").value.trim();
         let idNum = document.getElementById("patientId").value.trim();
         let phone = document.getElementById("patientPhone").value.trim();
+        let fileNum = document.getElementById("fileNumber").value.trim();
         let branch = document.getElementById("clinicBranch").value;
         let doctor = document.getElementById("doctorName").value;
         let coordinator = document.getElementById("coordinatorName").value;
@@ -330,7 +347,54 @@
         let dateStr = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
 
         if (editIndex === -1) {
-            bookings.unshift({ date: dateStr, name, idNum, phone, branch, doctor, coordinator, status, problem });
+            bookings.unshift({ date: dateStr, name, idNum, phone, fileNum, branch, doctor, coordinator, status, problem });
             alert("تم إضافة الحجز بنجاح وتوجيهه للطبيب!");
         } else {
-            bookings[editIndex] = { ...bookings[editIndex], name
+            bookings[editIndex] = { ...bookings[editIndex], name, idNum, phone, fileNum, branch, doctor, coordinator, status, problem };
+            alert("تم تحديث البيانات بنجاح!");
+        }
+
+        localStorage.setItem("clinic_bookings_v6", JSON.stringify(bookings));
+        resetForm();
+        renderAll();
+    }
+
+    function editBooking(index) {
+        let item = bookings[index];
+        document.getElementById("patientName").value = item.name;
+        document.getElementById("patientId").value = item.idNum;
+        document.getElementById("patientPhone").value = item.phone;
+        document.getElementById("fileNumber").value = item.fileNum || "";
+        document.getElementById("clinicBranch").value = item.branch;
+        document.getElementById("doctorName").value = item.doctor;
+        document.getElementById("coordinatorName").value = item.coordinator;
+        document.getElementById("caseStatus").value = item.status;
+        document.getElementById("patientProblem").value = item.problem || "";
+        
+        document.getElementById("editIndex").value = index;
+        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
+        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
+        document.getElementById("cancelBtn").style.display = "block";
+        
+        switchView('mainView');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteBooking(index) {
+        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
+            bookings.splice(index, 1);
+            localStorage.setItem("clinic_bookings_v6", JSON.stringify(bookings));
+            renderAll();
+            alert("تم الحذف بنجاح.");
+        }
+    }
+
+    function resetForm() {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientId").value = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("fileNumber").value = "";
+        document.getElementById("patientProblem").value = "";
+        document.getElementById("editIndex").value = "-1";
+        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
+        document.getElementById("saveBtn").innerText = "حفظ وإضافة الم
