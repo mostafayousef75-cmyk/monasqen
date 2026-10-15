@@ -7,12 +7,12 @@
     <style>
         :root {
             --bg-color: #f4f7f6;
-            --container-bg: #white;
-            --text-color: #333;
+            --container-bg: #ffffff;
+            --text-color: #333333;
             --box-bg: #fafbfc;
             --border-color: #e1e8ed;
-            --input-bg: #fff;
-            --input-text: #333;
+            --input-bg: #ffffff;
+            --input-text: #333333;
             --table-even: #f8f9fa;
         }
 
@@ -21,28 +21,26 @@
             --container-bg: #1e1e1e;
             --text-color: #e0e0e0;
             --box-bg: #2d2d2d;
-            --border-color: #444;
-            --input-bg: #333;
-            --input-text: #fff;
+            --border-color: #444444;
+            --input-bg: #333333;
+            --input-text: #ffffff;
             --table-even: #252525;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; direction: rtl; transition: 0.3s; }
-        .container { max-width: 1350px; margin: auto; background: var(--container-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; direction: rtl; transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: 1350px; margin: auto; background: var(--container-bg); color: var(--text-color); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: background-color 0.3s, color 0.3s; }
         
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h2 { color: var(--text-color); margin: 0; }
+        h2, h3 { color: var(--text-color); }
         
-        /* زر المظهر الليلي */
-        .theme-toggle-btn { background: none; border: 2px solid var(--border-color); color: var(--text-color); font-size: 20px; padding: 6px 12px; border-radius: 50px; cursor: pointer; transition: 0.2s; }
-        .theme-toggle-btn:hover { background: rgba(0,0,0,0.1); }
+        .theme-toggle-btn { background: none; border: 2px solid var(--border-color); color: var(--text-color); font-size: 20px; padding: 6px 14px; border-radius: 50px; cursor: pointer; transition: 0.2s; }
+        .theme-toggle-btn:hover { background: rgba(128,128,128,0.2); }
 
-        /* شريط التنقل بين الصفحات */
         .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         .tab-btn { background: var(--box-bg); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; color: var(--text-color); transition: 0.2s; }
         .tab-btn.active, .tab-btn:hover { background: #007bff; color: white; border-color: #007bff; }
 
-        .section-box { background: var(--box-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px; transition: 0.3s; }
+        .section-box { background: var(--box-bg); color: var(--text-color); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px; transition: 0.3s; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; }
         label { margin-bottom: 5px; font-weight: bold; font-size: 14px; color: var(--text-color); }
@@ -58,7 +56,6 @@
         .btn-danger { background: #dc3545; color: white; padding: 6px 10px; font-size: 12px; }
         .btn-danger:hover { background: #c82333; }
 
-        /* المؤشرات الإحصائية */
         .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .kpi-card { background: var(--box-bg); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
         .kpi-card h4 { margin: 0; font-size: 14px; color: var(--text-color); opacity: 0.8; }
@@ -88,16 +85,16 @@
         <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="تغيير الوضع المظلم/الفاتح">🌙</button>
     </div>
 
-    <!-- شريط الانتقال بين الصفحات -->
+    <!-- شريط التنقل بين الصفحات -->
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchView('mainView')">📋 لوحة المنسقين الرئيسية</button>
-        <button class="tab-btn" onclick="switchView('docMahmoud')">👨‍⚕️ د. محمود</button>
-        <button class="tab-btn" onclick="switchView('docSamy')">👨‍⚕️ د. سامى</button>
-        <button class="tab-btn" onclick="switchView('docAbdullah')">👨‍⚕️ د. عبد الله</button>
-        <button class="tab-btn" onclick="switchView('docMarwan')">👨‍⚕️ د. مروان</button>
-        <button class="tab-btn" onclick="switchView('docEngy')">👩‍⚕️ د. إنجى</button>
-        <button class="tab-btn" onclick="switchView('docDermatology')">🩺 الجلدية</button>
-        <button class="tab-btn" onclick="switchView('docOther')">📌 أخرى</button>
+        <button class="tab-btn active" onclick="switchView('mainView', event)">📋 لوحة المنسقين الرئيسية</button>
+        <button class="tab-btn" onclick="switchView('docMahmoud', event)">👨‍⚕️ د. محمود</button>
+        <button class="tab-btn" onclick="switchView('docSamy', event)">👨‍⚕️ د. سامى</button>
+        <button class="tab-btn" onclick="switchView('docAbdullah', event)">👨‍⚕️ د. عبد الله</button>
+        <button class="tab-btn" onclick="switchView('docMarwan', event)">👨‍⚕️ د. مروان</button>
+        <button class="tab-btn" onclick="switchView('docEngy', event)">👩‍⚕️ د. إنجى</button>
+        <button class="tab-btn" onclick="switchView('docDermatology', event)">🩺 الجلدية</button>
+        <button class="tab-btn" onclick="switchView('docOther', event)">📌 أخرى</button>
     </div>
 
     <!-- 1. اللوحة الرئيسية للمنسقين -->
@@ -244,9 +241,9 @@
 </div>
 
 <script>
-    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v7")) || [];
+    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v8")) || [];
 
-    // تفعيل الوضع الليلي المحفوظ مسبقاً
+    // تهيئة الوضع الليلي/الفاتح عند التحميل
     let currentTheme = localStorage.getItem("clinic_theme") || "light";
     document.body.setAttribute("data-theme", currentTheme);
     document.getElementById("themeToggleBtn").innerText = currentTheme === "dark" ? "☀️" : "🌙";
@@ -259,12 +256,14 @@
         document.getElementById("themeToggleBtn").innerText = newTheme === "dark" ? "☀️" : "🌙";
     }
 
-    function switchView(viewId) {
+    function switchView(viewId, event) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(viewId).classList.add('active-view');
-        event.currentTarget.classList.add('active');
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
         renderAll();
     }
 
@@ -281,53 +280,54 @@
 
     function renderMainTable() {
         let tbody = document.getElementById("bookingsTableBody");
-        let searchFilter = document.getElementById("searchInput").value.toLowerCase();
+        let searchInput = document.getElementById("searchInput");
+        let searchFilter = searchInput ? searchInput.value.toLowerCase() : "";
         tbody.innerHTML = "";
         
         let total = bookings.length;
         let resolved = 0;
         let pending = 0;
 
-        let filtered = bookings.filter(item => 
-            item.name.toLowerCase().includes(searchFilter) || 
-            item.idNum.includes(searchFilter) || 
-            item.fileNum.toLowerCase().includes(searchFilter) ||
-            item.problem.toLowerCase().includes(searchFilter) ||
-            item.doctor.toLowerCase().includes(searchFilter)
-        );
-
         bookings.forEach(item => {
             if (item.status === "تم حل المشكلة") resolved++;
             else pending++;
         });
 
+        let filtered = bookings.filter(item => 
+            (item.name && item.name.toLowerCase().includes(searchFilter)) || 
+            (item.idNum && item.idNum.includes(searchFilter)) || 
+            (item.fileNum && item.fileNum.toLowerCase().includes(searchFilter)) ||
+            (item.problem && item.problem.toLowerCase().includes(searchFilter)) ||
+            (item.doctor && item.doctor.toLowerCase().includes(searchFilter))
+        );
+
         if (filtered.length === 0) {
             tbody.innerHTML = `<tr><td colspan="11" style="color: #777;">لا توجد بيانات مطابقة</td></tr>`;
+        } else {
+            filtered.forEach(item => {
+                let origIndex = bookings.indexOf(item);
+                let badgeClass = item.status === "تم حل المشكلة" ? "bg-success" : (item.status === "لم يتم الحل" ? "bg-danger" : "bg-warning");
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.date}</td>
+                        <td><b>${item.name}</b></td>
+                        <td>${item.idNum}</td>
+                        <td>${item.phone}</td>
+                        <td><b>${item.fileNum || '-'}</b></td>
+                        <td>${item.branch}</td>
+                        <td>${item.doctor}</td>
+                        <td style="max-width: 180px; word-break: break-word;">${item.problem || '-'}</td>
+                        <td>${item.coordinator}</td>
+                        <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
+                            <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
-
-        filtered.forEach(item => {
-            let origIndex = bookings.indexOf(item);
-            let badgeClass = item.status === "تم حل المشكلة" ? "bg-success" : (item.status === "لم يتم الحل" ? "bg-danger" : "bg-warning");
-
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.date}</td>
-                    <td><b>${item.name}</b></td>
-                    <td>${item.idNum}</td>
-                    <td>${item.phone}</td>
-                    <td><b>${item.fileNum || '-'}</b></td>
-                    <td>${item.branch}</td>
-                    <td>${item.doctor}</td>
-                    <td style="max-width: 180px; word-break: break-word;">${item.problem || '-'}</td>
-                    <td>${item.coordinator}</td>
-                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                    <td>
-                        <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
-                        <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
-                    </td>
-                </tr>
-            `;
-        });
 
         document.getElementById("totalCases").innerText = total;
         document.getElementById("resolvedCases").innerText = resolved;
@@ -388,17 +388,17 @@
         }
 
         let now = new Date();
-        let dateStr = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+        let dateStr = now.toLocaleDateString('ar-EG', {year: 'numeric', month: '2-digit', day: '2-digit'}) + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
 
         if (editIndex === -1) {
             bookings.unshift({ date: dateStr, name, idNum, phone, fileNum, branch, doctor, coordinator, status, problem });
-            alert("تم إضافة الحجز بنجاح وتوجيهه للطبيب!");
+            alert("تم إضافة الحجز بنجاح وتوجيه الحالة للطبيب!");
         } else {
             bookings[editIndex] = { ...bookings[editIndex], name, idNum, phone, fileNum, branch, doctor, coordinator, status, problem };
             alert("تم تحديث البيانات بنجاح!");
         }
 
-        localStorage.setItem("clinic_bookings_v7", JSON.stringify(bookings));
+        localStorage.setItem("clinic_bookings_v8", JSON.stringify(bookings));
         resetForm();
         renderAll();
     }
@@ -406,4 +406,47 @@
     function editBooking(index) {
         let item = bookings[index];
         document.getElementById("patientName").value = item.name;
-        document.getElementById("patientId").value
+        document.getElementById("patientId").value = item.idNum;
+        document.getElementById("patientPhone").value = item.phone;
+        document.getElementById("fileNumber").value = item.fileNum || "";
+        document.getElementById("clinicBranch").value = item.branch;
+        document.getElementById("doctorName").value = item.doctor;
+        document.getElementById("coordinatorName").value = item.coordinator;
+        document.getElementById("caseStatus").value = item.status;
+        document.getElementById("patientProblem").value = item.problem || "";
+        
+        document.getElementById("editIndex").value = index;
+        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
+        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
+        document.getElementById("cancelBtn").style.display = "block";
+        
+        switchView('mainView');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteBooking(index) {
+        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
+            bookings.splice(index, 1);
+            localStorage.setItem("clinic_bookings_v8", JSON.stringify(bookings));
+            renderAll();
+            alert("تم الحذف بنجاح.");
+        }
+    }
+
+    function resetForm() {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientId").value = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("fileNumber").value = "";
+        document.getElementById("patientProblem").value = "";
+        document.getElementById("editIndex").value = "-1";
+        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
+        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد";
+        document.getElementById("cancelBtn").style.display = "none";
+    }
+
+    renderAll();
+</script>
+
+</body>
+</html>
