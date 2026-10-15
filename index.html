@@ -33,7 +33,7 @@
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h2, h3 { color: var(--text-color); margin: 0; }
         
-        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .theme-toggle-btn { background: none; border: 2px solid var(--border-color); color: var(--text-color); font-size: 20px; padding: 6px 14px; border-radius: 50px; cursor: pointer; transition: 0.2s; }
         .theme-toggle-btn:hover { background: rgba(128,128,128,0.2); }
 
@@ -60,7 +60,7 @@
         .btn-danger:hover { background: #c82333; }
         .btn-export { background: #17a2b8; color: white; padding: 6px 12px; font-size: 13px; }
         .btn-export:hover { background: #138496; }
-        .btn-import { background: #6c757d; color: white; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+        .btn-import { background: #6c757d; color: white; padding: 6px 12px; font-size: 13px; cursor: pointer; display: inline-block; text-align: center; border-radius: 6px; }
         .btn-import:hover { background: #5a6268; }
 
         .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
@@ -91,9 +91,9 @@
     <div class="header-flex">
         <h2>🏥 نظام إدارة العيادات بماجستى وجداول الأطباء والمنسقين</h2>
         <div class="header-actions">
-            <button class="btn btn-export" onclick="exportToCSV()" title="تحميل نسخة احتياطية إكسل">📥 تصدير السجلات</button>
-            <label class="btn btn-import" title="استعادة سجلات من ملف احتياطي">
-                📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importFromJSON(event)" style="display: none;">
+            <button class="btn btn-export" onclick="exportData()" title="تحميل نسخة احتياطية">📥 تصدير السجلات</button>
+            <label class="btn-import" title="استعادة سجلات من ملف احتياطي">
+                📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display: none;">
             </label>
             <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="تغيير الوضع المظلم/الفاتح">🌙</button>
         </div>
@@ -306,7 +306,18 @@
 </div>
 
 <script>
-    let bookings = JSON.parse(localStorage.getItem("clinic_master_bookings_v11")) || [];
+    // مفتاح تخزين مستقر وآمن
+    let STORAGE_KEY = "majwaty_clinic_bookings_v12";
+    let bookings = [];
+
+    try {
+        let savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            bookings = JSON.parse(savedData);
+        }
+    } catch(e) {
+        bookings = [];
+    }
 
     let currentTheme = localStorage.getItem("clinic_theme") || "light";
     document.body.setAttribute("data-theme", currentTheme);
@@ -544,34 +555,37 @@
         });
     }
 
-    // دوال تصدير واستيراد البيانات الاحتياطية
-    function exportToCSV() {
+    // دوال التصدير والاستيراد المحسنة
+    function exportData() {
         if (bookings.length === 0) {
             alert("لا توجد بيانات لتصديرها!");
             return;
         }
-        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bookings, null, 2));
-        let downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "clinic_backup_" + new Date().toISOString().slice(0,10) + ".json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
+        let jsonStr = JSON.stringify(bookings, null, 2);
+        let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "clinic_backup_" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    function importFromJSON(event) {
+    function importData(event) {
         let file = event.target.files[0];
         if (!file) return;
         let reader = new FileReader();
         reader.onload = function(e) {
             try {
-                let importedData = JSON.parse(e.target.result);
-                if (Array.isArray(importedData)) {
-                    if (confirm("هل أنت متأكد من استعادة هذه البيانات؟ سيتم دمجها أو استبدال السجلات الحالية.")) {
-                        bookings = importedData;
-                        localStorage.setItem("clinic_master_bookings_v11", JSON.stringify(bookings));
+                let imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    if (confirm("هل تريد استبدال البيانات الحالية بالبيانات المستوردة؟")) {
+                        bookings = imported;
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
                         renderAll();
-                        alert("تم استعادة البيانات بنجاح!");
+                        alert("تم استيراد البيانات بنجاح!");
                     }
                 } else {
                     alert("ملف غير صالح!");
@@ -632,7 +646,12 @@
             alert("تم تحديث البيانات بنجاح!");
         }
 
-        localStorage.setItem("clinic_master_bookings_v11", JSON.stringify(bookings));
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+        } catch(e) {
+            alert("حدث خطأ أثناء الحفظ في الذاكرة المحلية!");
+        }
+
         resetForm();
         renderAll();
     }
@@ -642,4 +661,60 @@
         document.getElementById("patientName").value = item.name;
         document.getElementById("patientPhone").value = item.phone;
         document.getElementById("patientId").value = item.idNum;
-        document.getElementById("fileNumber").value
+        document.getElementById("fileNumber").value = item.fileNum || "";
+        document.getElementById("contactMethod").value = item.contact || "اتصال";
+        document.getElementById("clinicBranch").value = item.branch;
+        document.getElementById("doctorName").value = item.doctor || "د. محمود";
+        checkDoctorOther();
+        if(item.doctor === "أخرى") {
+            document.getElementById("doctorOtherInput").value = item.doctorOther || "";
+        }
+        document.getElementById("caseStatus").value = item.status || "حجز";
+        document.getElementById("adminStatus").value = item.adminStatus || "قيد الانتظار";
+        checkAdminOther();
+        document.getElementById("adminNoteInput").value = item.adminNote || "";
+        document.getElementById("coordinatorName").value = item.coordinator || "";
+        document.getElementById("patientProblem").value = item.problem || "";
+        
+        document.getElementById("editIndex").value = index;
+        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
+        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
+        document.getElementById("cancelBtn").style.display = "block";
+        
+        switchView('mainView');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteBooking(index) {
+        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
+            bookings.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+            renderAll();
+            alert("تم الحذف بنجاح.");
+        }
+    }
+
+    function resetForm() {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("patientId").value = "";
+        document.getElementById("fileNumber").value = "";
+        document.getElementById("patientProblem").value = "";
+        document.getElementById("coordinatorName").value = "";
+        document.getElementById("doctorOtherInput").value = "";
+        document.getElementById("adminNoteInput").value = "";
+        document.getElementById("doctorName").selectedIndex = 0;
+        document.getElementById("adminStatus").selectedIndex = 0;
+        checkDoctorOther();
+        checkAdminOther();
+        document.getElementById("editIndex").value = "-1";
+        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
+        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد";
+        document.getElementById("cancelBtn").style.display = "none";
+    }
+
+    renderAll();
+</script>
+
+</body>
+</html>
