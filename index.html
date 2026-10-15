@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المواعيد ومتابعة الحالات - العيادة</title>
+    <title>نظام إدارة العيادات وجداول الأطباء - عن بُعد</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; direction: rtl; color: #333; }
-        .container { max-width: 1150px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         h2, h3 { text-align: center; color: #2c3e50; }
         
+        /* شريط التنقل بين الصفحات (الرئيسية وبوابات الأطباء) */
+        .nav-tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 25px; border-bottom: 2px solid #ddd; padding-bottom: 15px; }
+        .tab-btn { background: #e9ecef; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; color: #495057; transition: 0.2s; }
+        .tab-btn.active, .tab-btn:hover { background: #007bff; color: white; }
+
         .section-box { background: #fafbfc; padding: 20px; border-radius: 10px; border: 1px solid #e1e8ed; margin-bottom: 25px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .form-group { display: flex; flex-direction: column; }
@@ -28,128 +33,258 @@
         .kpi-card h4 { margin: 0; font-size: 14px; color: #555; }
         .kpi-card span { font-size: 22px; font-weight: bold; color: #007bff; display: block; margin-top: 5px; }
 
-        /* الجدول والبحث */
         .search-box { margin-bottom: 15px; display: flex; gap: 10px; }
         .search-box input { flex: 1; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #e1e8ed; padding: 10px; text-align: center; font-size: 14px; }
         th { background-color: #007bff; color: white; }
-        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:nth-child(in) { background-color: #f8f9fa; }
         
         .badge { padding: 5px 10px; border-radius: 4px; color: white; font-size: 12px; font-weight: bold; }
         .bg-success { background: #28a745; }
         .bg-warning { background: #ffc107; color: #333; }
         .bg-danger { background: #dc3545; }
+        
+        .view-section { display: none; }
+        .view-section.active-view { display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🏥 لوحة متابعة المنسقين وإدارة الحجوزات - العيادة</h2>
+    <h2>🏥 نظام إدارة العيادات وجداول الأطباء والمنسقين</h2>
 
-    <!-- لوحة المؤشرات الإحصائية -->
-    <div class="kpi-container">
-        <div class="kpi-card">
-            <h4>إجمالي الحالات</h4>
-            <span id="totalCases">0</span>
+    <!-- شريط الانتقال بين لوحة المنسقين وصفحات الأطباء -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchView('mainView')">📋 لوحة المنسقين الرئيسية</button>
+        <button class="tab-btn" onclick="switchView('docMahmoud')">👨‍⚕️ د. محمود</button>
+        <button class="tab-btn" onclick="switchView('docSamy')">👨‍⚕️ د. سامى</button>
+        <button class="tab-btn" onclick="switchView('docAbdullah')">👨‍⚕️ د. عبد الله</button>
+        <button class="tab-btn" onclick="switchView('docMarwan')">👨‍⚕️ د. مروان</button>
+        <button class="tab-btn" onclick="switchView('docEngy')">👩‍⚕️ د. إنجى</button>
+        <button class="tab-btn" onclick="switchView('docDermatology')">🩺 الجلدية</button>
+        <button class="tab-btn" onclick="switchView('docOther')">📌 أخرى</button>
+    </div>
+
+    <!-- 1. اللوحة الرئيسية للمنسقين (تسجيل وعرض الكل) -->
+    <div id="mainView" class="view-section active-view">
+        
+        <!-- المؤشرات الإحصائية -->
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h4>إجمالي الحالات</h4>
+                <span id="totalCases">0</span>
+            </div>
+            <div class="kpi-card">
+                <h4>تم حل المشكلة</h4>
+                <span id="resolvedCases" style="color: #28a745;">0</span>
+            </div>
+            <div class="kpi-card">
+                <h4>قيد المتابعة</h4>
+                <span id="pendingCases" style="color: #e67e22;">0</span>
+            </div>
         </div>
-        <div class="kpi-card">
-            <h4>تم حل المشكلة</h4>
-            <span id="resolvedCases" style="color: #28a745;">0</span>
+
+        <!-- نموذج تسجيل أو تعديل حجز -->
+        <div class="section-box">
+            <h3 id="formTitle">📝 تسجيل موعد / حالة جديدة</h3>
+            <input type="hidden" id="editIndex" value="-1">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>اسم المريض:</label>
+                    <input type="text" id="patientName" placeholder="أدخل اسم المريض">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهوية:</label>
+                    <input type="text" id="patientId" placeholder="رقم الهوية الوطنية">
+                </div>
+                <div class="form-group">
+                    <label>رقم الجوال:</label>
+                    <input type="text" id="patientPhone" placeholder="05xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>الفرع:</label>
+                    <select id="clinicBranch">
+                        <option value="معشي">معشي</option>
+                        <option value="الوسام">الوسام</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الطبيب المعالج:</label>
+                    <select id="doctorName">
+                        <option value="د. محمود">د. محمود</option>
+                        <option value="د. سامى">د. سامى</option>
+                        <option value="د. عبد الله">د. عبد الله</option>
+                        <option value="د. مروان">د. مروان</option>
+                        <option value="د. إنجى">د. إنجى</option>
+                        <option value="الجلدية">الجلدية</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اسم المنسق:</label>
+                    <select id="coordinatorName">
+                        <option value="مصطفى">مصطفى</option>
+                        <option value="أمينة">أمينة</option>
+                        <option value="مؤمن">مؤمن</option>
+                        <option value="وهبة">وهبة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>متابعة التواصل / الحالة:</label>
+                    <select id="caseStatus">
+                        <option value="قيد المتابعة">قيد المتابعة 🟡</option>
+                        <option value="تم حل المشكلة">تم حل المشكلة 🟢</option>
+                        <option value="لم يتم الحل">لم يتم الحل 🔴</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-success" id="saveBtn" onclick="saveBooking()">حفظ وإضافة الموعد</button>
+            <button class="btn" id="cancelBtn" style="background:#6c757d; margin-top:10px; display:none;" onclick="resetForm()">إلغاء التعديل</button>
         </div>
-        <div class="kpi-card">
-            <h4>قيد المتابعة</h4>
-            <span id="pendingCases" style="color: #e67e22;">0</span>
+
+        <!-- جدول المتابعة والبحث الشامل -->
+        <div class="section-box">
+            <h3>📋 سجل متابعة المنسقين والعملاء (الكل)</h3>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض أو رقم الهوية أو الطبيب..." onkeyup="renderAll()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>المريض</th>
+                        <th>الهوية</th>
+                        <th>الجوال</th>
+                        <th>الفرع</th>
+                        <th>الطبيب</th>
+                        <th>المنسق</th>
+                        <th>الحالة</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTableBody"></tbody>
+            </table>
         </div>
     </div>
 
-    <!-- نموذج تسجيل أو تعديل حالة مريض -->
-    <div class="section-box">
-        <h3 id="formTitle">📝 تسجيل موعد / حالة جديدة</h3>
-        <input type="hidden" id="editIndex" value="-1">
-        <div class="form-grid">
-            <div class="form-group">
-                <label>اسم المريض:</label>
-                <input type="text" id="patientName" placeholder="أدخل اسم المريض">
-            </div>
-            <div class="form-group">
-                <label>رقم الهوية:</label>
-                <input type="text" id="patientId" placeholder="رقم الهوية الوطنية">
-            </div>
-            <div class="form-group">
-                <label>رقم الجوال:</label>
-                <input type="text" id="patientPhone" placeholder="05xxxxxxxx">
-            </div>
-            <div class="form-group">
-                <label>الفرع:</label>
-                <select id="clinicBranch">
-                    <option value="معشي">معشي</option>
-                    <option value="الوسام">الوسام</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>الطبيب المعالج:</label>
-                <select id="doctorName">
-                    <option value="د. أحمد">د. أحمد</option>
-                    <option value="د. سارة">د. سارة</option>
-                    <option value="د. محمد">د. محمد</option>
-                    <option value="د. فاطمة">د. فاطمة</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>اسم المنسق:</label>
-                <select id="coordinatorName">
-                    <option value="مصطفى">مصطفى</option>
-                    <option value="أمينة">أمينة</option>
-                    <option value="مؤمن">مؤمن</option>
-                    <option value="وهبة">وهبة</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>متابعة التواصل / الحالة:</label>
-                <select id="caseStatus">
-                    <option value="قيد المتابعة">قيد المتابعة 🟡</option>
-                    <option value="تم حل المشكلة">تم حل المشكلة 🟢</option>
-                    <option value="لم يتم الحل">لم يتم الحل 🔴</option>
-                </select>
-            </div>
+    <!-- 2. صفحة د. محمود -->
+    <div id="docMahmoud" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. محمود</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_doc_محمود"></tbody>
+            </table>
         </div>
-        <button class="btn btn-success" id="saveBtn" onclick="saveBooking()">حفظ وإضافة الموعد</button>
-        <button class="btn" id="cancelBtn" style="background:#6c757d; margin-top:10px; display:none;" onclick="resetForm()">إلغاء التعديل</button>
     </div>
 
-    <!-- جدول المتابعة والبحث للمنسقين -->
-    <div class="section-box">
-        <h3>📋 سجل متابعة المنسقين والعملاء</h3>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض أو رقم الهوية أو المنسق..." onkeyup="renderBookings()">
+    <!-- 3. صفحة د. سامى -->
+    <div id="docSamy" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. سامى</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_doc_سامى"></tbody>
+            </table>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>التاريخ والتوقيت</th>
-                    <th>المريض</th>
-                    <th>رقم الهوية</th>
-                    <th>الجوال</th>
-                    <th>الفرع</th>
-                    <th>الطبيب</th>
-                    <th>المنسق</th>
-                    <th>الحالة</th>
-                    <th>إجراء</th>
-                </tr>
-            </thead>
-            <tbody id="bookingsTableBody">
-                <!-- السجلات -->
-            </tbody>
-        </table>
+    </div>
+
+    <!-- 4. صفحة د. عبد الله -->
+    <div id="docAbdullah" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. عبد الله</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_doc_عبد_الله"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5. صفحة د. مروان -->
+    <div id="docMarwan" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. مروان</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_doc_مروان"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 6. صفحة د. إنجى -->
+    <div id="docEngy" class="view-section">
+        <h3>👩‍⚕️ حالات المواعيد الخاصة بـ: د. إنجى</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_doc_إنجى"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 7. صفحة الجلدية -->
+    <div id="docDermatology" class="view-section">
+        <h3>🩺 حالات المواعيد الخاصة بـ: الجلدية</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_الجلدية"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 8. صفحة أخرى -->
+    <div id="docOther" class="view-section">
+        <h3>📌 حالات المواعيد الخاصة بـ: أخرى</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr><th>التاريخ</th><th>المريض</th><th>الهوية</th><th>الجوال</th><th>الفرع</th><th>المنسق</th><th>الحالة</th><th>إجراء</th></tr>
+                </thead>
+                <tbody id="table_أخرى"></tbody>
+            </table>
+        </div>
     </div>
 
 </div>
 
 <script>
-    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v2")) || [];
+    let bookings = JSON.parse(localStorage.getItem("clinic_bookings_v3")) || [];
 
-    function renderBookings() {
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(viewId).classList.add('active-view');
+        event.currentTarget.classList.add('active');
+        renderAll();
+    }
+
+    function renderAll() {
+        renderMainTable();
+        renderDoctorTable("د. محمود", "table_doc_محمود");
+        renderDoctorTable("د. سامى", "table_doc_سامى");
+        renderDoctorTable("د. عبد الله", "table_doc_عبد_الله");
+        renderDoctorTable("د. مروان", "table_doc_مروان");
+        renderDoctorTable("د. إنجى", "table_doc_إنجى");
+        renderDoctorTable("الجلدية", "table_الجلدية");
+        renderDoctorTable("أخرى", "table_أخرى");
+    }
+
+    function renderMainTable() {
         let tbody = document.getElementById("bookingsTableBody");
         let searchFilter = document.getElementById("searchInput").value.toLowerCase();
         tbody.innerHTML = "";
@@ -158,28 +293,24 @@
         let resolved = 0;
         let pending = 0;
 
-        let filteredBookings = bookings.filter(item => 
+        let filtered = bookings.filter(item => 
             item.name.toLowerCase().includes(searchFilter) || 
             item.idNum.includes(searchFilter) || 
-            item.coordinator.toLowerCase().includes(searchFilter)
+            item.doctor.toLowerCase().includes(searchFilter)
         );
 
-        if (filteredBookings.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" style="color: #777;">لا توجد بيانات مطابقة للبحث</td></tr>`;
-        }
-
-        bookings.forEach((item, index) => {
+        bookings.forEach(item => {
             if (item.status === "تم حل المشكلة") resolved++;
             else pending++;
         });
 
-        filteredBookings.forEach((item) => {
-            // إيجاد الفهرس الحقيقي للعنصر الأصلي للتعديل
-            let originalIndex = bookings.indexOf(item);
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" style="color: #777;">لا توجد بيانات مطابقة</td></tr>`;
+        }
 
-            let badgeClass = "bg-warning";
-            if (item.status === "تم حل المشكلة") badgeClass = "bg-success";
-            if (item.status === "لم يتم الحل") badgeClass = "bg-danger";
+        filtered.forEach(item => {
+            let origIndex = bookings.indexOf(item);
+            let badgeClass = item.status === "تم حل المشكلة" ? "bg-success" : (item.status === "لم يتم الحل" ? "bg-danger" : "bg-warning");
 
             tbody.innerHTML += `
                 <tr>
@@ -191,9 +322,7 @@
                     <td>${item.doctor}</td>
                     <td>${item.coordinator}</td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                    <td>
-                        <button class="btn btn-warning" onclick="editBooking(${originalIndex})">تعديل الحالة</button>
-                    </td>
+                    <td><button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button></td>
                 </tr>
             `;
         });
@@ -201,6 +330,37 @@
         document.getElementById("totalCases").innerText = total;
         document.getElementById("resolvedCases").innerText = resolved;
         document.getElementById("pendingCases").innerText = pending;
+    }
+
+    function renderDoctorTable(docName, tableId) {
+        let tbody = document.getElementById(tableId);
+        if(!tbody) return;
+        tbody.innerHTML = "";
+
+        let docItems = bookings.filter(item => item.doctor === docName);
+
+        if (docItems.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="color: #777;">لا توجد حالات مسجلة لهذا الطبيب حتى الآن</td></tr>`;
+            return;
+        }
+
+        docItems.forEach(item => {
+            let origIndex = bookings.indexOf(item);
+            let badgeClass = item.status === "تم حل المشكلة" ? "bg-success" : (item.status === "لم يتم الحل" ? "bg-danger" : "bg-warning");
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td><b>${item.name}</b></td>
+                    <td>${item.idNum}</td>
+                    <td>${item.phone}</td>
+                    <td>${item.branch}</td>
+                    <td>${item.coordinator}</td>
+                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                    <td><button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button></td>
+                </tr>
+            `;
+        });
     }
 
     function saveBooking() {
@@ -214,7 +374,7 @@
         let editIndex = parseInt(document.getElementById("editIndex").value);
 
         if (!name || !idNum || !phone) {
-            alert("الرجاء إدخال بيانات المريض (الاسم، الهوية، الجوال) كاملة!");
+            alert("الرجاء إدخال بيانات المريض كاملة!");
             return;
         }
 
@@ -222,34 +382,16 @@
         let dateStr = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
 
         if (editIndex === -1) {
-            // إضافة جديد
-            let newBooking = {
-                date: dateStr,
-                name: name,
-                idNum: idNum,
-                phone: phone,
-                branch: branch,
-                doctor: doctor,
-                coordinator: coordinator,
-                status: status
-            };
-            bookings.unshift(newBooking);
-            alert("تم إضافة الحجز بنجاح!");
+            bookings.unshift({ date: dateStr, name, idNum, phone, branch, doctor, coordinator, status });
+            alert("تم إضافة الحجز وتوجيهه للطبيب تلقائياً!");
         } else {
-            // تعديل حالة أو بيانات مريض موجود مسبقاً
-            bookings[editIndex].name = name;
-            bookings[editIndex].idNum = idNum;
-            bookings[editIndex].phone = phone;
-            bookings[editIndex].branch = branch;
-            bookings[editIndex].doctor = doctor;
-            bookings[editIndex].coordinator = coordinator;
-            bookings[editIndex].status = status;
-            alert("تم تحديث وتعديل حالة المريض بنجاح!");
+            bookings[editIndex] = { ...bookings[editIndex], name, idNum, phone, branch, doctor, coordinator, status };
+            alert("تم تحديث البيانات بنجاح!");
         }
 
-        localStorage.setItem("clinic_bookings_v2", JSON.stringify(bookings));
+        localStorage.setItem("clinic_bookings_v3", JSON.stringify(bookings));
         resetForm();
-        renderBookings();
+        renderAll();
     }
 
     function editBooking(index) {
@@ -267,6 +409,7 @@
         document.getElementById("saveBtn").innerText = "حفظ التعديلات";
         document.getElementById("cancelBtn").style.display = "block";
         
+        switchView('mainView');
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
@@ -280,7 +423,7 @@
         document.getElementById("cancelBtn").style.display = "none";
     }
 
-    renderBookings();
+    renderAll();
 </script>
 
 </body>
