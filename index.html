@@ -62,8 +62,6 @@
         .btn-danger:hover { background: #c82333; }
         .btn-export { background: #17a2b8; color: white; padding: 6px 12px; font-size: 13px; }
         .btn-export:hover { background: #138496; }
-        .btn-print { background: #6610f2; color: white; padding: 6px 12px; font-size: 13px; }
-        .btn-print:hover { background: #520dc2; }
         .btn-import { background: #6c757d; color: white; padding: 6px 12px; font-size: 13px; cursor: pointer; display: inline-block; text-align: center; border-radius: 6px; }
         .btn-import:hover { background: #5a6268; }
 
@@ -91,18 +89,6 @@
         
         .view-section { display: none; }
         .view-section.active-view { display: block; }
-
-        /* تخصيص الطباعة لإخفاء الأزرار والنماذج وعرض التقرير بشكل نظيف ورقياً */
-        @media print {
-            body { background-color: #ffffff; color: #000000; padding: 0; }
-            .container { box-shadow: none; padding: 0; max-width: 100%; }
-            .header-actions, .nav-tabs, .section-box:has(.form-grid), .filter-bar, button, .no-print { display: none !important; }
-            table { border: 1px solid #000; width: 100%; margin-top: 20px; }
-            th, td { border: 1px solid #000; color: #000; padding: 8px; }
-            th { background-color: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; }
-            .print-title { display: block !important; text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: bold; }
-        }
-        .print-title { display: none; }
     </style>
 </head>
 <body data-theme="light">
@@ -112,7 +98,6 @@
         <h2>🏥 نظام إدارة العيادات بماجستى وجداول الأطباء والمنسقين</h2>
         <div class="header-actions">
             <span class="sync-badge" id="syncStatus">🟢 متصل ومحفوظ محلياً</span>
-            <button class="btn btn-print" onclick="printTodayReport()" title="طباعة تقرير حالات اليوم للأطباء">🖨️ طباعة تقرير اليوم</button>
             <button class="btn btn-export" onclick="exportData()" title="تحميل نسخة احتياطية">📥 تصدير السجلات</button>
             <label class="btn-import" title="استعادة سجلات من ملف احتياطي">
                 📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display: none;">
@@ -239,7 +224,6 @@
 
         <!-- جدول المتابعة والبحث الشامل مع تصفية التاريخ -->
         <div class="section-box">
-            <div class="print-title">📋 تقرير حالات عيادات ماجستي - كشف المواعيد اليومي</div>
             <h3>📋 سجل متابعة المنسقين والعملاء (الكل)</h3>
             <div class="filter-bar">
                 <select id="dateFilterSelect" onchange="renderMainTable()">
@@ -268,7 +252,7 @@
                         <th>ملحوظة الإدارة</th>
                         <th>مشكلة العميل</th>
                         <th>المنسق</th>
-                        <th class="no-print">إجراءات</th>
+                        <th>إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="bookingsTableBody"></tbody>
@@ -296,7 +280,7 @@
                         <th>ملحوظة الإدارة</th>
                         <th>مشكلة العميل</th>
                         <th>المنسق</th>
-                        <th class="no-print">إجراءات</th>
+                        <th>إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="priorityTableBody"></tbody>
@@ -307,31 +291,31 @@
     <!-- 2. صفحات الأطباء -->
     <div id="docMahmoud" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. محمود</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
     </div>
     <div id="docSamy" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. سامى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
     </div>
     <div id="docAbdullah" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. عبد الله</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
     </div>
     <div id="docMarwan" class="view-section">
         <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. مروان</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
     </div>
     <div id="docEngy" class="view-section">
         <h3>👩‍⚕️ حالات المواعيد الخاصة بـ: د. إنجى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
     </div>
     <div id="docDermatology" class="view-section">
         <h3>🩺 حالات المواعيد الخاصة بـ: الجلدية</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
     </div>
     <div id="docOther" class="view-section">
         <h3>📌 أخرى</h3>
-        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th class="no-print">إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
     </div>
 
 </div>
@@ -518,7 +502,6 @@
         return isNaN(parsed.getTime()) ? new Date(0) : parsed;
     }
 
-    // تنبيه بمرور الوقت لقيد الانتظار: برتقالي غامق بعد 24 ساعة، أحمر بعد 48 ساعة
     function getPendingAlertStyle(item) {
         if (item.adminStatus !== "قيد الانتظار") return "";
         let itemDate = parseItemDate(item.timestamp || item.date);
@@ -526,9 +509,9 @@
         let hoursDiff = (now - itemDate) / (1000 * 60 * 60);
 
         if (hoursDiff >= 48) {
-            return "background-color: rgba(220, 53, 69, 0.25); border-right: 4px solid #dc3545;"; // أحمر تنبيهي
+            return "background-color: rgba(220, 53, 69, 0.25); border-right: 4px solid #dc3545;";
         } else if (hoursDiff >= 24) {
-            return "background-color: rgba(230, 126, 34, 0.25); border-right: 4px solid #e67e22;"; // برتقالي غامق
+            return "background-color: rgba(230, 126, 34, 0.25); border-right: 4px solid #e67e22;";
         }
         return "";
     }
@@ -609,7 +592,7 @@
                         <td style="max-width: 150px; word-break: break-word;">${item.adminNote || '-'}</td>
                         <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
                         <td>${item.coordinator || '-'}</td>
-                        <td class="no-print">
+                        <td>
                             <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
                             <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
                         </td>
@@ -674,7 +657,7 @@
                     <td style="max-width: 150px; word-break: break-word;">${item.adminNote || '-'}</td>
                     <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
                     <td>${item.coordinator || '-'}</td>
-                    <td class="no-print">
+                    <td>
                         <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
                         <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
                     </td>
@@ -720,24 +703,13 @@
                     <td style="max-width: 150px; word-break: break-word;">${item.adminNote || '-'}</td>
                     <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
                     <td>${item.coordinator || '-'}</td>
-                    <td class="no-print">
+                    <td>
                         <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
                         <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
                     </td>
                 </tr>
             `;
         });
-    }
-
-    // دالة طباعة تقرير حالات اليوم
-    function printTodayReport() {
-        // ضبط فلتر التاريخ على "حالات اليوم فقط" مؤقتاً لطباعتها بدقة
-        let filterSelect = document.getElementById("dateFilterSelect");
-        if(filterSelect) {
-            filterSelect.value = "today";
-            renderMainTable();
-        }
-        window.print();
     }
 
     function saveBooking() {
@@ -785,4 +757,67 @@
             name, phone, idNum, fileNum, contact, branch, doctor, doctorOther, status, adminStatus, adminNote, coordinator, problem 
         };
 
-        saveBookingData(record, editKey ? editKey : null, (success
+        saveBookingData(record, editKey ? editKey : null, (success) => {
+            alert(editKey ? "تم تحديث وحفظ الحجز بنجاح!" : "تم إضافة وحفظ الحجز بنجاح!");
+            resetForm();
+        });
+    }
+
+    function editBooking(key) {
+        let item = bookingsObj[key];
+        if(!item) return;
+
+        document.getElementById("patientName").value = item.name || "";
+        document.getElementById("patientPhone").value = item.phone || "";
+        document.getElementById("patientId").value = item.idNum || "";
+        document.getElementById("fileNumber").value = item.fileNum || "";
+        document.getElementById("contactMethod").value = item.contact || "اتصال";
+        document.getElementById("clinicBranch").value = item.branch || "معشي";
+        document.getElementById("doctorName").value = item.doctor || "د. محمود";
+        checkDoctorOther();
+        if(item.doctor === "أخرى") {
+            document.getElementById("doctorOtherInput").value = item.doctorOther || "";
+        }
+        document.getElementById("caseStatus").value = item.status || "حجز";
+        document.getElementById("adminStatus").value = item.adminStatus || "قيد الانتظار";
+        checkAdminOther();
+        document.getElementById("adminNoteInput").value = item.adminNote || "";
+        document.getElementById("coordinatorName").value = item.coordinator || "";
+        document.getElementById("patientProblem").value = item.problem || "";
+        
+        document.getElementById("editKey").value = key;
+        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
+        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
+        document.getElementById("cancelBtn").style.display = "block";
+        
+        switchView('mainView');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteBooking(key) {
+        if (confirm("هل أنت متأكد من حذف هذا السجل؟")) {
+            deleteBookingFromStorage(key);
+            alert("تم الحذف بنجاح.");
+        }
+    }
+
+    function resetForm() {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("patientId").value = "";
+        document.getElementById("fileNumber").value = "";
+        document.getElementById("patientProblem").value = "";
+        document.getElementById("coordinatorName").value = "";
+        document.getElementById("doctorOtherInput").value = "";
+        document.getElementById("adminNoteInput").value = "";
+        document.getElementById("doctorName").selectedIndex = 0;
+        document.getElementById("adminStatus").selectedIndex = 0;
+        checkDoctorOther();
+        checkAdminOther();
+        document.getElementById("editKey").value = "";
+        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
+        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد";
+        document.getElementById("cancelBtn").style.display = "none";
+    }
+
+    function exportData()
