@@ -34,6 +34,8 @@
         h2, h3 { color: var(--text-color); margin: 0; }
         
         .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .sync-badge { background: #28a745; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        
         .theme-toggle-btn { background: none; border: 2px solid var(--border-color); color: var(--text-color); font-size: 20px; padding: 6px 14px; border-radius: 50px; cursor: pointer; transition: 0.2s; }
         .theme-toggle-btn:hover { background: rgba(128,128,128,0.2); }
 
@@ -91,6 +93,7 @@
     <div class="header-flex">
         <h2>🏥 نظام إدارة العيادات بماجستى وجداول الأطباء والمنسقين</h2>
         <div class="header-actions">
+            <span class="sync-badge" id="syncStatus">🟢 متصل بالسحابة (مباشر)</span>
             <button class="btn btn-export" onclick="exportData()" title="تحميل نسخة احتياطية">📥 تصدير السجلات</button>
             <label class="btn-import" title="استعادة سجلات من ملف احتياطي">
                 📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display: none;">
@@ -133,7 +136,7 @@
         <!-- نموذج تسجيل أو تعديل حجز -->
         <div class="section-box">
             <h3 id="formTitle">📝 تسجيل موعد / حالة جديدة</h3>
-            <input type="hidden" id="editIndex" value="-1">
+            <input type="hidden" id="editKey" value="">
             <div class="form-grid">
                 <div class="form-group">
                     <label>اسم المريض:</label>
@@ -211,7 +214,7 @@
                     <textarea id="patientProblem" placeholder="اكتب تفاصيل مشكلة العميل أو سبب الحجز..."></textarea>
                 </div>
             </div>
-            <button class="btn btn-success" id="saveBtn" onclick="saveBooking()">حفظ وإضافة الموعد</button>
+            <button class="btn btn-success" id="saveBtn" onclick="saveBooking()">حفظ وإضافة الموعد (سحابياً)</button>
             <button class="btn" id="cancelBtn" style="background:#6c757d; margin-top:10px; display:none;" onclick="resetForm()">إلغاء التعديل</button>
         </div>
 
@@ -299,25 +302,42 @@
         <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
     </div>
     <div id="docOther" class="view-section">
-        <h3>📌 حالات المواعيد الخاصة بـ: أخرى</h3>
+        <h3>📌 أخرى</h3>
         <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
     </div>
 
 </div>
 
+<!-- مكتبة Firebase Cloud -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 <script>
-    // مفتاح تخزين مستقر وآمن
-    let STORAGE_KEY = "majwaty_clinic_bookings_v12";
+    // ربط السحابة بقاعدة البيانات الخاصة بك
+    const firebaseConfig = {
+        databaseURL: "https://monasqen-default-rtdb.firebaseio.com/"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const bookingsRef = database.ref("bookings");
+
+    let bookingsObj = {};
     let bookings = [];
 
-    try {
-        let savedData = localStorage.getItem(STORAGE_KEY);
-        if (savedData) {
-            bookings = JSON.parse(savedData);
-        }
-    } catch(e) {
+    // مزامنة فورية ومباشرة من السحابة لجميع المستخدمين
+    bookingsRef.on("value", (snapshot) => {
+        let val = snapshot.val();
+        bookingsObj = val || {};
         bookings = [];
-    }
+        for (let key in bookingsObj) {
+            bookings.push({ _key: key, ...bookingsObj[key] });
+        }
+        bookings.reverse(); // أحدث البيانات أولاً
+        renderAll();
+        document.getElementById("syncStatus").innerHTML = "🟢 متصل بالسحابة (مباشر)";
+    }, (error) => {
+        document.getElementById("syncStatus").innerHTML = "🔴 تنبيه: تحقق من إعدادات القواعد في Firebase!";
+    });
 
     let currentTheme = localStorage.getItem("clinic_theme") || "light";
     document.body.setAttribute("data-theme", currentTheme);
@@ -418,7 +438,7 @@
             tbody.innerHTML = `<tr><td colspan="14" style="color: #777;">لا توجد بيانات مطابقة</td></tr>`;
         } else {
             filtered.forEach(item => {
-                let origIndex = bookings.indexOf(item);
+                let key = item._key;
                 let statusBadge = item.status === "حجز" ? "bg-success" : (item.status === "تعديل موعد" ? "bg-warning" : "bg-info");
                 let adminBadge = item.adminStatus === "تم التواصل" ? "bg-success" : (item.adminStatus === "قيد الانتظار" ? "bg-danger" : "bg-warning");
 
@@ -438,8 +458,8 @@
                         <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
                         <td>${item.coordinator || '-'}</td>
                         <td>
-                            <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
-                            <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
+                            <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
+                            <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
                         </td>
                     </tr>
                 `;
@@ -483,7 +503,7 @@
         }
 
         priorityItems.forEach(item => {
-            let origIndex = bookings.indexOf(item);
+            let key = item._key;
             let statusBadge = item.status === "حجز" ? "bg-success" : (item.status === "تعديل موعد" ? "bg-warning" : "bg-info");
 
             tbody.innerHTML += `
@@ -502,8 +522,8 @@
                     <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
                     <td>${item.coordinator || '-'}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
-                        <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
+                        <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
+                        <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
                     </td>
                 </tr>
             `;
@@ -528,7 +548,7 @@
         }
 
         docItems.forEach(item => {
-            let origIndex = bookings.indexOf(item);
+            let key = item._key;
             let statusBadge = item.status === "حجز" ? "bg-success" : (item.status === "تعديل موعد" ? "bg-warning" : "bg-info");
             let adminBadge = item.adminStatus === "تم التواصل" ? "bg-success" : (item.adminStatus === "قيد الانتظار" ? "bg-danger" : "bg-warning");
 
@@ -547,56 +567,15 @@
                     <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
                     <td>${item.coordinator || '-'}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editBooking(${origIndex})">تعديل</button>
-                        <button class="btn btn-danger" onclick="deleteBooking(${origIndex})">حذف</button>
+                        <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
+                        <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
                     </td>
                 </tr>
             `;
         });
     }
 
-    // دوال التصدير والاستيراد المحسنة
-    function exportData() {
-        if (bookings.length === 0) {
-            alert("لا توجد بيانات لتصديرها!");
-            return;
-        }
-        let jsonStr = JSON.stringify(bookings, null, 2);
-        let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = "clinic_backup_" + new Date().toISOString().slice(0, 10) + ".json";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    function importData(event) {
-        let file = event.target.files[0];
-        if (!file) return;
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                let imported = JSON.parse(e.target.result);
-                if (Array.isArray(imported)) {
-                    if (confirm("هل تريد استبدال البيانات الحالية بالبيانات المستوردة؟")) {
-                        bookings = imported;
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
-                        renderAll();
-                        alert("تم استيراد البيانات بنجاح!");
-                    }
-                } else {
-                    alert("ملف غير صالح!");
-                }
-            } catch (err) {
-                alert("حدث خطأ أثناء قراءة الملف!");
-            }
-        };
-        reader.readAsText(file);
-    }
-
+    // دوال الحفظ والتعديل والحذف سحابياً
     function saveBooking() {
         let name = document.getElementById("patientName").value.trim();
         let phone = document.getElementById("patientPhone").value.trim();
@@ -611,7 +590,7 @@
         let adminNote = document.getElementById("adminNoteInput").value.trim();
         let coordinator = document.getElementById("coordinatorName").value.trim();
         let problem = document.getElementById("patientProblem").value.trim();
-        let editIndex = parseInt(document.getElementById("editIndex").value);
+        let editKey = document.getElementById("editKey").value;
 
         if (!name || !phone || !idNum) {
             alert("الرجاء إدخال بيانات المريض الأساسية (الاسم، الجوال، الهوية)!");
@@ -638,32 +617,33 @@
 
         let record = { date: dateStr, name, phone, idNum, fileNum, contact, branch, doctor, doctorOther, status, adminStatus, adminNote, coordinator, problem };
 
-        if (editIndex === -1) {
-            bookings.unshift(record);
-            alert("تم إضافة الحجز بنجاح وتوجيه الحالة للطبيب!");
+        if (!editKey) {
+            bookingsRef.push(record).then(() => {
+                alert("تم إضافة الحجز بنجاح ومزامنته سحابياً مع جميع المستخدمين!");
+                resetForm();
+            }).catch(err => {
+                alert("خطأ في الحفظ السحابي! تأكد من القواعد (Rules) في Firebase.");
+            });
         } else {
-            bookings[editIndex] = record;
-            alert("تم تحديث البيانات بنجاح!");
+            bookingsRef.child(editKey).update(record).then(() => {
+                alert("تم تحديث الحجز بنجاح سحابياً!");
+                resetForm();
+            }).catch(err => {
+                alert("خطأ أثناء التحديث السحابي!");
+            });
         }
-
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
-        } catch(e) {
-            alert("حدث خطأ أثناء الحفظ في الذاكرة المحلية!");
-        }
-
-        resetForm();
-        renderAll();
     }
 
-    function editBooking(index) {
-        let item = bookings[index];
-        document.getElementById("patientName").value = item.name;
-        document.getElementById("patientPhone").value = item.phone;
-        document.getElementById("patientId").value = item.idNum;
+    function editBooking(key) {
+        let item = bookingsObj[key];
+        if(!item) return;
+
+        document.getElementById("patientName").value = item.name || "";
+        document.getElementById("patientPhone").value = item.phone || "";
+        document.getElementById("patientId").value = item.idNum || "";
         document.getElementById("fileNumber").value = item.fileNum || "";
         document.getElementById("contactMethod").value = item.contact || "اتصال";
-        document.getElementById("clinicBranch").value = item.branch;
+        document.getElementById("clinicBranch").value = item.branch || "معشي";
         document.getElementById("doctorName").value = item.doctor || "د. محمود";
         checkDoctorOther();
         if(item.doctor === "أخرى") {
@@ -676,21 +656,20 @@
         document.getElementById("coordinatorName").value = item.coordinator || "";
         document.getElementById("patientProblem").value = item.problem || "";
         
-        document.getElementById("editIndex").value = index;
-        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
-        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
+        document.getElementById("editKey").value = key;
+        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض (سحابياً)";
+        document.getElementById("saveBtn").innerText = "حفظ التعديلات السحابية";
         document.getElementById("cancelBtn").style.display = "block";
         
         switchView('mainView');
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    function deleteBooking(index) {
-        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً؟")) {
-            bookings.splice(index, 1);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
-            renderAll();
-            alert("تم الحذف بنجاح.");
+    function deleteBooking(key) {
+        if (confirm("هل أنت متأكد من حذف هذا السجل نهائياً من السحابة؟")) {
+            bookingsRef.child(key).remove().then(() => {
+                alert("تم الحذف بنجاح من السحابة لدى الجميع.");
+            });
         }
     }
 
@@ -707,13 +686,53 @@
         document.getElementById("adminStatus").selectedIndex = 0;
         checkDoctorOther();
         checkAdminOther();
-        document.getElementById("editIndex").value = "-1";
+        document.getElementById("editKey").value = "";
         document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
-        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد";
+        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد (سحابياً)";
         document.getElementById("cancelBtn").style.display = "none";
     }
 
-    renderAll();
+    function exportData() {
+        if (bookings.length === 0) {
+            alert("لا توجد بيانات لتصديرها!");
+            return;
+        }
+        let jsonStr = JSON.stringify(bookings, null, 2);
+        let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "clinic_backup_" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    if (confirm("هل تريد رفع هذه البيانات إلى السحابة فوراً؟")) {
+                        imported.forEach(item => {
+                            delete item._key;
+                            bookingsRef.push(item);
+                        });
+                        alert("تم رفع البيانات المستوردة إلى السحابة بنجاح!");
+                    }
+                } else {
+                    alert("ملف غير صالح!");
+                }
+            } catch (err) {
+                alert("حدث خطأ أثناء قراءة الملف!");
+            }
+        };
+        reader.readAsText(file);
+    }
 </script>
 
 </body>
