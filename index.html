@@ -97,7 +97,7 @@
     <div class="header-flex">
         <h2>🏥 نظام إدارة العيادات بماجستى وجداول الأطباء والمنسقين</h2>
         <div class="header-actions">
-            <span class="sync-badge" id="syncStatus">🟢 متصل ومحفوظ محلياً</span>
+            <span class="sync-badge" id="syncStatus">🟢 النظام جاهز ومحفوظ</span>
             <button class="btn btn-export" onclick="exportData()" title="تحميل نسخة احتياطية">📥 تصدير السجلات</button>
             <label class="btn-import" title="استعادة سجلات من ملف احتياطي">
                 📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display: none;">
@@ -283,4 +283,610 @@
                         <th>إجراءات</th>
                     </tr>
                 </thead>
-                <tbody id="priorityTable
+                <tbody id="priorityTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. صفحات الأطباء -->
+    <div id="docMahmoud" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. محمود</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
+    </div>
+    <div id="docSamy" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. سامى</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
+    </div>
+    <div id="docAbdullah" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. عبد الله</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_عبد_الله"></tbody></table></div>
+    </div>
+    <div id="docMarwan" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. مروان</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_مروان"></tbody></table></div>
+    </div>
+    <div id="docEngy" class="view-section">
+        <h3>👩‍⚕️ حالات المواعيد الخاصة بـ: د. إنجى</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_إنجى"></tbody></table></div>
+    </div>
+    <div id="docDermatology" class="view-section">
+        <h3>🩺 حالات المواعيد الخاصة بـ: الجلدية</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_الجلدية"></tbody></table></div>
+    </div>
+    <div id="docOther" class="view-section">
+        <h3>📌 أخرى</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_أخرى"></tbody></table></div>
+    </div>
+
+</div>
+
+<!-- مكتبة Firebase Cloud -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+    // ربط السحابة مع دعم التخزين المحلي الآمن لضمان عدم ضياع أي حالة
+    const firebaseConfig = {
+        databaseURL: "https://monasqen-default-rtdb.firebaseio.com/"
+    };
+    
+    let database = null;
+    let bookingsRef = null;
+    
+    try {
+        firebase.initializeApp(firebaseConfig);
+        database = firebase.database();
+        bookingsRef = database.ref("bookings");
+    } catch(e) {
+        console.warn("تنبيه: تعمل العيادة بنظام التخزين المحلي الاحتياطي");
+    }
+
+    let bookingsObj = {};
+    let bookings = [];
+
+    // جلب البيانات (من السحابة أو التخزين المحلي كبديل فوري)
+    function initDataSync() {
+        if (bookingsRef) {
+            bookingsRef.on("value", (snapshot) => {
+                let val = snapshot.val();
+                if (val) {
+                    bookingsObj = val;
+                    processBookingsData();
+                    document.getElementById("syncStatus").innerHTML = "🟢 متصل بالسحابة (مباشر)";
+                } else {
+                    loadFromLocalStorage();
+                }
+            }, (error) => {
+                loadFromLocalStorage();
+                document.getElementById("syncStatus").innerHTML = "🟡 يعمل محلياً (بدون سحابة)";
+            });
+        } else {
+            loadFromLocalStorage();
+        }
+    }
+
+    function loadFromLocalStorage() {
+        let localData = localStorage.getItem("clinic_bookings_local");
+        if (localData) {
+            try {
+                bookingsObj = JSON.parse(localData);
+            } catch(e) {
+                bookingsObj = {};
+            }
+        } else {
+            bookingsObj = {};
+        }
+        processBookingsData();
+    }
+
+    function saveToLocalStorageAndCloud(record, editKey, callback) {
+        if (!editKey) {
+            let newKey = 'local_' + Date.now();
+            bookingsObj[newKey] = record;
+        } else {
+            bookingsObj[editKey] = record;
+        }
+
+        // حفظ محلياً فوراً لضمان عدم ضياع البيانات
+        localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
+        processBookingsData();
+
+        // محاولة الحفظ في السحابة إذا كانت متاحة
+        if (bookingsRef) {
+            if (!editKey) {
+                bookingsRef.push(record).then(() => {
+                    if(callback) callback(true);
+                }).catch(err => {
+                    if(callback) callback(true); // تم الحفظ محلياً على الأقل
+                });
+            } else {
+                bookingsRef.child(editKey).update(record).then(() => {
+                    if(callback) callback(true);
+                }).catch(err => {
+                    if(callback) callback(true);
+                });
+            }
+        } else {
+            if(callback) callback(true);
+        }
+    }
+
+    function deleteRecordFromStorage(key) {
+        delete bookingsObj[key];
+        localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
+        processBookingsData();
+
+        if (bookingsRef && !key.startsWith('local_')) {
+            bookingsRef.child(key).remove().catch(e => {});
+        }
+    }
+
+    function processBookingsData() {
+        bookings = [];
+        for (let key in bookingsObj) {
+            bookings.push({ _key: key, ...bookingsObj[key] });
+        }
+        bookings.reverse(); // أحدث البيانات أولاً
+        renderAll();
+    }
+
+    // بدء المزامنة فور تشغيل الصفحة
+    initDataSync();
+
+    let currentTheme = localStorage.getItem("clinic_theme") || "light";
+    document.body.setAttribute("data-theme", currentTheme);
+    let themeBtn = document.getElementById("themeToggleBtn");
+    if(themeBtn) themeBtn.innerText = currentTheme === "dark" ? "☀️" : "🌙";
+
+    function toggleTheme() {
+        let theme = document.body.getAttribute("data-theme");
+        let newTheme = theme === "light" ? "dark" : "light";
+        document.body.setAttribute("data-theme", newTheme);
+        localStorage.setItem("clinic_theme", newTheme);
+        let btn = document.getElementById("themeToggleBtn");
+        if(btn) btn.innerText = newTheme === "dark" ? "☀️" : "🌙";
+    }
+
+    function checkDoctorOther() {
+        let docSelect = document.getElementById("doctorName");
+        let otherGroup = document.getElementById("doctorOtherGroup");
+        if(docSelect.value === "أخرى") {
+            otherGroup.style.display = "flex";
+        } else {
+            otherGroup.style.display = "none";
+            document.getElementById("doctorOtherInput").value = "";
+        }
+    }
+
+    function checkAdminOther() {
+        let adminSelect = document.getElementById("adminStatus");
+        let noteGroup = document.getElementById("adminNoteGroup");
+        if(adminSelect.value === "أخرى") {
+            noteGroup.style.display = "flex";
+        } else {
+            noteGroup.style.display = "none";
+            document.getElementById("adminNoteInput").value = "";
+        }
+    }
+
+    function switchView(viewId, event) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        let targetView = document.getElementById(viewId);
+        if(targetView) targetView.classList.add('active-view');
+        
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+        renderAll();
+    }
+
+    function renderAll() {
+        renderMainTable();
+        renderPriorityTable();
+        renderDoctorTable("د. محمود", "table_doc_محمود");
+        renderDoctorTable("د. سامى", "table_doc_سامى");
+        renderDoctorTable("د. عبد الله", "table_doc_عبد_الله");
+        renderDoctorTable("د. مروان", "table_doc_مروان");
+        renderDoctorTable("د. إنجى", "table_doc_إنجى");
+        renderDoctorTable("الجلدية", "table_الجلدية");
+        renderDoctorTable("أخرى", "table_أخرى");
+    }
+
+    function getDoctorDisplayName(item) {
+        if(item.doctor === "أخرى" && item.doctorOther) {
+            return `أخرى (${item.doctorOther})`;
+        }
+        return item.doctor;
+    }
+
+    function parseItemDate(dateStr) {
+        if(!dateStr) return new Date(0);
+        try {
+            let parts = dateStr.split(' ');
+            let dParts = parts[0].split('/');
+            if(dParts.length === 3) {
+                let day = parseInt(dParts[0], 10);
+                let month = parseInt(dParts[1], 10) - 1;
+                let year = parseInt(dParts[2], 10);
+                let timeParts = parts[1] ? parts[1].split(':') : [0, 0];
+                let hour = parseInt(timeParts[0], 10) || 0;
+                let min = parseInt(timeParts[1], 10) || 0;
+                return new Date(year, month, day, hour, min);
+            }
+        } catch(e) {}
+        let parsed = new Date(dateStr);
+        return isNaN(parsed.getTime()) ? new Date(0) : parsed;
+    }
+
+    function getPendingAlertStyle(item) {
+        if (item.adminStatus !== "قيد الانتظار") return "";
+        let itemDate = parseItemDate(item.timestamp || item.date);
+        let now = new Date();
+        let hoursDiff = (now - itemDate) / (1000 * 60 * 60);
+
+        if (hoursDiff >= 48) {
+            return "background-color: rgba(220, 53, 69, 0.2); border-right: 4px solid #dc3545;";
+        } else if (hoursDiff >= 24) {
+            return "background-color: rgba(255, 165, 0, 0.2); border-right: 4px solid #fd7e14;";
+        }
+        return "";
+    }
+
+    function filterByDatePeriod(list) {
+        let filterVal = document.getElementById("dateFilterSelect") ? document.getElementById("dateFilterSelect").value : "all";
+        if(filterVal === "all") return list;
+
+        let now = new Date();
+        return list.filter(item => {
+            let itemDate = parseItemDate(item.timestamp || item.date);
+            if(filterVal === "today") {
+                return itemDate.getDate() === now.getDate() &&
+                       itemDate.getMonth() === now.getMonth() &&
+                       itemDate.getFullYear() === now.getFullYear();
+            } else if(filterVal === "week") {
+                let diffTime = Math.abs(now - itemDate);
+                let diffDays = diffTime / (1000 * 60 * 60 * 24);
+                return diffDays <= 7;
+            } else if(filterVal === "month") {
+                return itemDate.getMonth() === now.getMonth() &&
+                       itemDate.getFullYear() === now.getFullYear();
+            }
+            return true;
+        });
+    }
+
+    function renderMainTable() {
+        let tbody = document.getElementById("bookingsTableBody");
+        if(!tbody) return;
+        let searchInput = document.getElementById("searchInput");
+        let searchFilter = searchInput ? searchInput.value.toLowerCase() : "";
+        tbody.innerHTML = "";
+        
+        let total = bookings.length;
+        let resolvedCount = 0;
+        let pendingCount = 0;
+
+        bookings.forEach(item => {
+            if (item.adminStatus === "تم التواصل") resolvedCount++;
+            else pendingCount++;
+        });
+
+        let dateFiltered = filterByDatePeriod(bookings);
+
+        let filtered = dateFiltered.filter(item => {
+            let docStr = getDoctorDisplayName(item).toLowerCase();
+            return (item.name && item.name.toLowerCase().includes(searchFilter)) || 
+                   (item.phone && item.phone.includes(searchFilter)) ||
+                   (item.idNum && item.idNum.includes(searchFilter)) || 
+                   (item.fileNum && item.fileNum.toLowerCase().includes(searchFilter)) ||
+                   (item.problem && item.problem.toLowerCase().includes(searchFilter)) ||
+                   (docStr.includes(searchFilter)) ||
+                   (item.coordinator && item.coordinator.toLowerCase().includes(searchFilter));
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="14" style="color: #777;">لا توجد بيانات مطابقة للفترة أو البحث المحدد</td></tr>`;
+        } else {
+            filtered.forEach(item => {
+                let key = item._key;
+                let statusBadge = item.status === "حجز" ? "bg-success" : (item.status === "تعديل موعد" ? "bg-purple" : "bg-info");
+                let adminBadge = item.adminStatus === "تم التواصل" ? "bg-success" : (item.adminStatus === "قيد الانتظار" ? "bg-danger" : "bg-warning");
+                let rowStyle = getPendingAlertStyle(item);
+
+                tbody.innerHTML += `
+                    <tr style="${rowStyle}">
+                        <td>${item.date}</td>
+                        <td><b>${item.name}</b></td>
+                        <td>${item.phone}</td>
+                        <td>${item.idNum}</td>
+                        <td><b>${item.fileNum || '-'}</b></td>
+                        <td>${item.contact || 'اتصال'}</td>
+                        <td>${item.branch}</td>
+                        <td>${getDoctorDisplayName(item)}</td>
+                        <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                        <td><span class="badge ${adminBadge}">${item.adminStatus}</span></td>
+                        <td style="max-width: 150px; word-break: break-word;">${item.adminNote || '-'}</td>
+                        <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
+                        <td>${item.coordinator || '-'}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
+                            <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        let totalElem = document.getElementById("totalCases");
+        let resolvedElem = document.getElementById("resolvedCases");
+        let pendingElem = document.getElementById("pendingCases");
+        if(totalElem) totalElem.innerText = total;
+        if(resolvedElem) resolvedElem.innerText = resolvedCount;
+        if(pendingElem) pendingElem.innerText = pendingCount;
+    }
+
+    function renderPriorityTable() {
+        let tbody = document.getElementById("priorityTableBody");
+        if(!tbody) return;
+        tbody.innerHTML = "";
+
+        let phoneCounts = {};
+        let fileCounts = {};
+
+        bookings.forEach(item => {
+            if(item.phone) phoneCounts[item.phone] = (phoneCounts[item.phone] || 0) + 1;
+            if(item.fileNum) fileCounts[item.fileNum] = (fileCounts[item.fileNum] || 0) + 1;
+        });
+
+        let priorityItems = bookings.filter(item => {
+            let isPending = (item.adminStatus === "قيد الانتظار");
+            let isPhoneRepeated = item.phone && phoneCounts[item.phone] > 1;
+            let isFileRepeated = item.fileNum && fileCounts[item.fileNum] > 1;
+            return isPending && (isPhoneRepeated || isFileRepeated);
+        });
+
+        let badgeCountElem = document.getElementById("priorityCountBadge");
+        if(badgeCountElem) badgeCountElem.innerText = priorityItems.length;
+
+        if (priorityItems.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="14" style="color: #777;">لا توجد حالات متكررة قيد الانتظار حالياً</td></tr>`;
+            return;
+        }
+
+        priorityItems.forEach(item => {
+            let key = item._key;
+            let statusBadge = item.status === "حجز" ? "bg-success" : (item.status === "تعديل موعد" ? "bg-purple" : "bg-info");
+            let rowStyle = getPendingAlertStyle(item);
+
+            tbody.innerHTML += `
+                <tr style="${rowStyle ? rowStyle : 'background-color: rgba(220, 53, 69, 0.05);'}">
+                    <td>${item.date}</td>
+                    <td><b>${item.name}</b></td>
+                    <td><b style="color: #dc3545;">${item.phone} 🔄</b></td>
+                    <td>${item.idNum}</td>
+                    <td><b style="color: #dc3545;">${item.fileNum || '-'} 🔄</b></td>
+                    <td>${item.contact || 'اتصال'}</td>
+                    <td>${item.branch}</td>
+                    <td>${getDoctorDisplayName(item)}</td>
+                    <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                    <td><span class="badge bg-danger">${item.adminStatus}</span></td>
+                    <td style="max-width: 150px; word-break: break-word;">${item.adminNote || '-'}</td>
+                    <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
+                    <td>${item.coordinator || '-'}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
+                        <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderDoctorTable(docName, tableId) {
+        let tbody = document.getElementById(tableId);
+        if(!tbody) return;
+        tbody.innerHTML = "";
+
+        let docItems = bookings.filter(item => {
+            if(docName === "أخرى") {
+                return item.doctor === "أخرى" || (item.doctor !== "د. محمود" && item.doctor !== "د. سامى" && item.doctor !== "د. عبد الله" && item.doctor !== "د. مروان" && item.doctor !== "د. إنجى" && item.doctor !== "الجلدية");
+            }
+            return item.doctor === docName;
+        });
+
+        if (docItems.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="13" style="color: #777;">لا توجد حالات مسجلة لهذا الطبيب حتى الآن</td></tr>`;
+            return;
+        }
+
+        docItems.forEach(item => {
+            let key = item._key;
+            let statusBadge = item.status === "حجز" ? "bg-success" : (item.status === "تعديل موعد" ? "bg-purple" : "bg-info");
+            let adminBadge = item.adminStatus === "تم التواصل" ? "bg-success" : (item.adminStatus === "قيد الانتظار" ? "bg-danger" : "bg-warning");
+            let rowStyle = getPendingAlertStyle(item);
+
+            tbody.innerHTML += `
+                <tr style="${rowStyle}">
+                    <td>${item.date}</td>
+                    <td><b>${item.name}</b></td>
+                    <td>${item.phone}</td>
+                    <td>${item.idNum}</td>
+                    <td><b>${item.fileNum || '-'}</b></td>
+                    <td>${item.contact || 'اتصال'}</td>
+                    <td>${item.branch}</td>
+                    <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                    <td><span class="badge ${adminBadge}">${item.adminStatus}</span></td>
+                    <td style="max-width: 150px; word-break: break-word;">${item.adminNote || '-'}</td>
+                    <td style="max-width: 150px; word-break: break-word;">${item.problem || '-'}</td>
+                    <td>${item.coordinator || '-'}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editBooking('${key}')">تعديل</button>
+                        <button class="btn btn-danger" onclick="deleteBooking('${key}')">حذف</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function saveBooking() {
+        let name = document.getElementById("patientName").value.trim();
+        let phone = document.getElementById("patientPhone").value.trim();
+        let idNum = document.getElementById("patientId").value.trim();
+        let fileNum = document.getElementById("fileNumber").value.trim();
+        let contact = document.getElementById("contactMethod").value;
+        let branch = document.getElementById("clinicBranch").value;
+        let doctor = document.getElementById("doctorName").value;
+        let doctorOther = document.getElementById("doctorOtherInput").value.trim();
+        let status = document.getElementById("caseStatus").value;
+        let adminStatus = document.getElementById("adminStatus").value;
+        let adminNote = document.getElementById("adminNoteInput").value.trim();
+        let coordinator = document.getElementById("coordinatorName").value.trim();
+        let problem = document.getElementById("patientProblem").value.trim();
+        let editKey = document.getElementById("editKey").value;
+
+        if (!name || !phone || !idNum) {
+            alert("الرجاء إدخال بيانات المريض الأساسية (الاسم، الجوال، الهوية)!");
+            return;
+        }
+
+        if (!coordinator) {
+            alert("الرجاء كتابة اسم المنسق المسؤول!");
+            return;
+        }
+
+        if (doctor === "أخرى" && !doctorOther) {
+            alert("الرجاء كتابة اسم الطبيب أو التخصص في خانة (أخرى)!");
+            return;
+        }
+
+        if (adminStatus === "أخرى" && !adminNote) {
+            alert("الرجاء كتابة الملحوظة الإدارية!");
+            return;
+        }
+
+        let now = new Date();
+        let dateStr = now.toLocaleDateString('ar-EG', {year: 'numeric', month: '2-digit', day: '2-digit'}) + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
+
+        let record = { 
+            date: dateStr, 
+            timestamp: now.toISOString(),
+            name, phone, idNum, fileNum, contact, branch, doctor, doctorOther, status, adminStatus, adminNote, coordinator, problem 
+        };
+
+        saveToLocalStorageAndCloud(record, editKey ? editKey : null, (success) => {
+            alert(editKey ? "تم تحديث الحجز بنجاح!" : "تم إضافة الحجز بنجاح!");
+            resetForm();
+        });
+    }
+
+    function editBooking(key) {
+        let item = bookingsObj[key];
+        if(!item) return;
+
+        document.getElementById("patientName").value = item.name || "";
+        document.getElementById("patientPhone").value = item.phone || "";
+        document.getElementById("patientId").value = item.idNum || "";
+        document.getElementById("fileNumber").value = item.fileNum || "";
+        document.getElementById("contactMethod").value = item.contact || "اتصال";
+        document.getElementById("clinicBranch").value = item.branch || "معشي";
+        document.getElementById("doctorName").value = item.doctor || "د. محمود";
+        checkDoctorOther();
+        if(item.doctor === "أخرى") {
+            document.getElementById("doctorOtherInput").value = item.doctorOther || "";
+        }
+        document.getElementById("caseStatus").value = item.status || "حجز";
+        document.getElementById("adminStatus").value = item.adminStatus || "قيد الانتظار";
+        checkAdminOther();
+        document.getElementById("adminNoteInput").value = item.adminNote || "";
+        document.getElementById("coordinatorName").value = item.coordinator || "";
+        document.getElementById("patientProblem").value = item.problem || "";
+        
+        document.getElementById("editKey").value = key;
+        document.getElementById("formTitle").innerText = "✏️ تعديل بيانات وحالة المريض";
+        document.getElementById("saveBtn").innerText = "حفظ التعديلات";
+        document.getElementById("cancelBtn").style.display = "block";
+        
+        switchView('mainView');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    function deleteBooking(key) {
+        if (confirm("هل أنت متأكد من حذف هذا السجل؟")) {
+            deleteRecordFromStorage(key);
+            alert("تم الحذف بنجاح.");
+        }
+    }
+
+    function resetForm() {
+        document.getElementById("patientName").value = "";
+        document.getElementById("patientPhone").value = "";
+        document.getElementById("patientId").value = "";
+        document.getElementById("fileNumber").value = "";
+        document.getElementById("patientProblem").value = "";
+        document.getElementById("coordinatorName").value = "";
+        document.getElementById("doctorOtherInput").value = "";
+        document.getElementById("adminNoteInput").value = "";
+        document.getElementById("doctorName").selectedIndex = 0;
+        document.getElementById("adminStatus").selectedIndex = 0;
+        checkDoctorOther();
+        checkAdminOther();
+        document.getElementById("editKey").value = "";
+        document.getElementById("formTitle").innerText = "📝 تسجيل موعد / حالة جديدة";
+        document.getElementById("saveBtn").innerText = "حفظ وإضافة الموعد";
+        document.getElementById("cancelBtn").style.display = "none";
+    }
+
+    function exportData() {
+        if (bookings.length === 0) {
+            alert("لا توجد بيانات لتصديرها!");
+            return;
+        }
+        let jsonStr = JSON.stringify(bookings, null, 2);
+        let blob = new Blob([jsonStr], { type: "application/json;charset=utf-8;" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "clinic_backup_" + new Date().toISOString().slice(0, 10) + ".json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let imported = JSON.parse(e.target.result);
+                // معالجة الملف سواء كان مصفوفة أو كائن
+                let itemsArray = Array.isArray(imported) ? imported : Object.values(imported);
+                
+                if (itemsArray.length > 0) {
+                    if (confirm(`هل تريد استيراد ${itemsArray.length} سجل وإضافتها للنظام؟`)) {
+                        itemsArray.forEach(item => {
+                            let cleanItem = { ...item };
+                            delete cleanItem._key;
+                            let uniqueKey = 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                            bookingsObj[uniqueKey] = cleanItem;
+                        });
+                        localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
+                        processBookingsData();
+                        alert("تم استيراد الملف وإضافة السجلات بنجاح!");
+                    }
+                } else {
+                    alert("الملف لا يحتوي على بيانات صالحة!");
+                }
+            } catch (err) {
+                alert("حدث خطأ أثناء قراءة ملف JSON!");
+            }
+        };
+        reader.readAsText(file);
+    }
+</script>
+
+</body>
+</html>
