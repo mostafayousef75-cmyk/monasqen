@@ -62,8 +62,6 @@
         .btn-danger:hover { background: #c82333; }
         .btn-export { background: #17a2b8; color: white; padding: 6px 12px; font-size: 13px; }
         .btn-export:hover { background: #138496; }
-        .btn-print { background: #6610f2; color: white; padding: 6px 12px; font-size: 13px; }
-        .btn-print:hover { background: #520dc2; }
         .btn-import { background: #6c757d; color: white; padding: 6px 12px; font-size: 13px; cursor: pointer; display: inline-block; text-align: center; border-radius: 6px; }
         .btn-import:hover { background: #5a6268; }
 
@@ -72,14 +70,13 @@
         .kpi-card h4 { margin: 0; font-size: 14px; color: var(--text-color); opacity: 0.8; }
         .kpi-card span { font-size: 22px; font-weight: bold; color: #007bff; display: block; margin-top: 5px; }
 
-        .coordinator-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 15px; }
-        .coord-card { background: var(--container-bg); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; font-size: 13px; }
-        .coord-card h5 { margin: 0 0 8px 0; color: #007bff; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        /* قسم بطاقات إحصائيات المنسقين */
+        .coordinator-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 15px; }
+        .coord-card { background: var(--container-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .coord-card h5 { margin: 0 0 10px 0; color: #007bff; font-size: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
 
-        .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 15px; background: var(--container-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
-        .search-box { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; flex: 1; }
+        .search-box { margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .search-box input { flex: 1; min-width: 200px; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; color: var(--text-color); }
         th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; font-size: 13px; }
         th { background-color: #007bff; color: white; }
@@ -90,22 +87,9 @@
         .bg-warning { background: #ffc107; color: #333; }
         .bg-danger { background: #dc3545; }
         .bg-info { background: #17a2b8; }
-        .bg-purple { background: #6f42c1; }
         
         .view-section { display: none; }
         .view-section.active-view { display: block; }
-
-        @media print {
-            body { background: white !important; color: black !important; padding: 0 !important; }
-            .container { box-shadow: none !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; background: white !important; color: black !important; }
-            .header-actions, .nav-tabs, .section-box:has(.form-grid), .search-box, .btn, button, input, select, textarea, .kpi-container { display: none !important; }
-            .view-section { display: none !important; }
-            #mainView { display: block !important; }
-            table { font-size: 11px !important; width: 100% !important; border: 1px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; color: black !important; padding: 5px !important; }
-            th { background-color: #ddd !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .badge { border: 1px solid #000; color: black !important; background: none !important; }
-        }
     </style>
 </head>
 <body data-theme="light">
@@ -116,7 +100,6 @@
         <div class="header-actions">
             <span class="sync-badge" id="syncStatus">🟢 متصل بالسحابة (مباشر)</span>
             <button class="btn btn-export" onclick="exportData()" title="تحميل نسخة احتياطية">📥 تصدير السجلات</button>
-            <button class="btn btn-print" onclick="printTodayReport()" title="طباعة تقرير الحالات">🖨️ طباعة تقرير اليوم</button>
             <label class="btn-import" title="استعادة سجلات من ملف احتياطي">
                 📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display: none;">
             </label>
@@ -155,11 +138,11 @@
             </div>
         </div>
 
-        <!-- تقارير سريعة وأحصائيات للمنسقين (KPIs متقدمة) -->
+        <!-- 📊 تقارير وإحصائيات أداء المنسقين (KPIs متقدمة لنشاط اليوم) -->
         <div class="section-box">
             <h3>📊 تقارير وإحصائيات أداء المنسقين (نشاط اليوم)</h3>
-            <div id="coordinatorStatsContainer" class="coordinator-stats-grid" style="margin-top: 15px;">
-                <!-- يتم تعبئتها ديناميكياً -->
+            <div id="coordinatorStatsContainer" class="coordinator-stats-grid">
+                <!-- يتم تعبئتها ديناميكياً بناءً على الحالات المسجلة اليوم -->
             </div>
         </div>
 
@@ -217,4 +200,104 @@
                 <div class="form-group">
                     <label>نوع المتابعة:</label>
                     <select id="caseStatus">
-                        <option value
+                        <option value="حجز">حجز 🟢</option>
+                        <option value="تعديل موعد">تعديل موعد 🟡</option>
+                        <option value="متابعة">متابعة 🔵</option>
+                        <option value="أخرى">أخرى ⚪</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>متابعة من قبل الإدارة:</label>
+                    <select id="adminStatus" onchange="checkAdminOther()">
+                        <option value="قيد الانتظار">قيد الانتظار ⏳</option>
+                        <option value="تم التواصل">تم التواصل ✅</option>
+                        <option value="أخرى">أخرى 📝</option>
+                    </select>
+                </div>
+                <div class="form-group" id="adminNoteGroup" style="display: none; grid-column: 1 / -1;">
+                    <label>ملحوظة الإدارة مع العميل:</label>
+                    <textarea id="adminNoteInput" placeholder="اكتب الملحوظة أو التفاصيل التي حدثت مع العميل..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>اسم المنسق:</label>
+                    <input type="text" id="coordinatorName" placeholder="اكتب اسم المنسق...">
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>مشكلة العميل / تفاصيل الشكوى:</label>
+                    <textarea id="patientProblem" placeholder="اكتب تفاصيل مشكلة العميل أو سبب الحجز..."></textarea>
+                </div>
+            </div>
+            <button class="btn btn-success" id="saveBtn" onclick="saveBooking()">حفظ وإضافة الموعد (سحابياً)</button>
+            <button class="btn" id="cancelBtn" style="background:#6c757d; margin-top:10px; display:none;" onclick="resetForm()">إلغاء التعديل</button>
+        </div>
+
+        <!-- جدول المتابعة والبحث الشامل -->
+        <div class="section-box">
+            <h3>📋 سجل متابعة المنسقين والعملاء (الكل)</h3>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="بحث سريع باسم المريض، الجوال، الهوية، رقم الملف، المنسق، أو المشكلة..." onkeyup="renderAll()">
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>المريض</th>
+                        <th>الجوال</th>
+                        <th>الهوية</th>
+                        <th>رقم الملف</th>
+                        <th>التواصل</th>
+                        <th>الفرع</th>
+                        <th>الطبيب</th>
+                        <th>المتابعة</th>
+                        <th>الإدارة</th>
+                        <th>ملحوظة الإدارة</th>
+                        <th>مشكلة العميل</th>
+                        <th>المنسق</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- صفحة الحالات المتكررة ذات الأولوية -->
+    <div id="priorityView" class="view-section">
+        <h3 style="color: #dc3545;">🚨 الحالات المتكررة ذات الأولوية (أرقام جوال أو ملف متكررة وإدارتها "قيد الانتظار")</h3>
+        <div class="section-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>المريض</th>
+                        <th>رقم الجوال (متكرر)</th>
+                        <th>الهوية</th>
+                        <th>رقم الملف (متكرر)</th>
+                        <th>التواصل</th>
+                        <th>الفرع</th>
+                        <th>الطبيب</th>
+                        <th>المتابعة</th>
+                        <th>الإدارة</th>
+                        <th>ملحوظة الإدارة</th>
+                        <th>مشكلة العميل</th>
+                        <th>المنسق</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="priorityTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. صفحات الأطباء -->
+    <div id="docMahmoud" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. محمود</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_محمود"></tbody></table></div>
+    </div>
+    <div id="docSamy" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. سامى</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة العميل</th><th>المنسق</th><th>إجراءات</th></tr></thead><tbody id="table_doc_سامى"></tbody></table></div>
+    </div>
+    <div id="docAbdullah" class="view-section">
+        <h3>👨‍⚕️ حالات المواعيد الخاصة بـ: د. عبد الله</h3>
+        <div class="section-box"><table><thead><tr><th>التاريخ</th><th>المريض</th><th>الجوال</th><th>الهوية</th><th>رقم الملف</th><th>التواصل</th><th>الفرع</th><th>المتابعة</th><th>الإدارة</th><th>ملحوظة الإدارة</th><th>مشكلة الع
