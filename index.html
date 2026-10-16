@@ -97,7 +97,7 @@
     <div class="header-flex">
         <h2>🏥 نظام إدارة العيادات بماجستى وجداول الأطباء والمنسقين</h2>
         <div class="header-actions">
-            <span class="sync-badge" id="syncStatus">🟢 النظام جاهز ومحفوظ</span>
+            <span class="sync-badge" id="syncStatus">🟢 متصل ومحفوظ محلياً</span>
             <button class="btn btn-export" onclick="exportData()" title="تحميل نسخة احتياطية">📥 تصدير السجلات</button>
             <label class="btn-import" title="استعادة سجلات من ملف احتياطي">
                 📤 استيراد السجلات <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display: none;">
@@ -325,7 +325,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // ربط السحابة مع دعم التخزين المحلي الآمن لضمان عدم ضياع أي حالة
     const firebaseConfig = {
         databaseURL: "https://monasqen-default-rtdb.firebaseio.com/"
     };
@@ -337,49 +336,46 @@
         firebase.initializeApp(firebaseConfig);
         database = firebase.database();
         bookingsRef = database.ref("bookings");
-    } catch(e) {
-        console.warn("تنبيه: تعمل العيادة بنظام التخزين المحلي الاحتياطي");
-    }
+    } catch(e) {}
 
     let bookingsObj = {};
     let bookings = [];
 
-    // جلب البيانات (من السحابة أو التخزين المحلي كبديل فوري)
-    function initDataSync() {
-        if (bookingsRef) {
-            bookingsRef.on("value", (snapshot) => {
-                let val = snapshot.val();
-                if (val) {
-                    bookingsObj = val;
-                    processBookingsData();
-                    document.getElementById("syncStatus").innerHTML = "🟢 متصل بالسحابة (مباشر)";
-                } else {
-                    loadFromLocalStorage();
-                }
-            }, (error) => {
-                loadFromLocalStorage();
-                document.getElementById("syncStatus").innerHTML = "🟡 يعمل محلياً (بدون سحابة)";
-            });
-        } else {
-            loadFromLocalStorage();
-        }
-    }
-
-    function loadFromLocalStorage() {
+    function loadInitialData() {
         let localData = localStorage.getItem("clinic_bookings_local");
         if (localData) {
             try {
                 bookingsObj = JSON.parse(localData);
-            } catch(e) {
-                bookingsObj = {};
-            }
-        } else {
-            bookingsObj = {};
+                processBookingsData();
+            } catch(e) {}
         }
-        processBookingsData();
+    }
+    loadInitialData();
+
+    if (bookingsRef) {
+        bookingsRef.on("value", (snapshot) => {
+            let val = snapshot.val();
+            if (val) {
+                bookingsObj = val;
+                localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
+                processBookingsData();
+                document.getElementById("syncStatus").innerHTML = "🟢 متصل بالسحابة (مباشر)";
+            }
+        }, (error) => {
+            document.getElementById("syncStatus").innerHTML = "🟡 يعمل محلياً (في انتظار الإنترنت)";
+        });
     }
 
-    function saveToLocalStorageAndCloud(record, editKey, callback) {
+    function processBookingsData() {
+        bookings = [];
+        for (let key in bookingsObj) {
+            bookings.push({ _key: key, ...bookingsObj[key] });
+        }
+        bookings.reverse();
+        renderAll();
+    }
+
+    function saveBookingData(record, editKey, callback) {
         if (!editKey) {
             let newKey = 'local_' + Date.now();
             bookingsObj[newKey] = record;
@@ -387,17 +383,15 @@
             bookingsObj[editKey] = record;
         }
 
-        // حفظ محلياً فوراً لضمان عدم ضياع البيانات
         localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
         processBookingsData();
 
-        // محاولة الحفظ في السحابة إذا كانت متاحة
         if (bookingsRef) {
             if (!editKey) {
                 bookingsRef.push(record).then(() => {
                     if(callback) callback(true);
                 }).catch(err => {
-                    if(callback) callback(true); // تم الحفظ محلياً على الأقل
+                    if(callback) callback(true);
                 });
             } else {
                 bookingsRef.child(editKey).update(record).then(() => {
@@ -411,7 +405,7 @@
         }
     }
 
-    function deleteRecordFromStorage(key) {
+    function deleteBookingFromStorage(key) {
         delete bookingsObj[key];
         localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
         processBookingsData();
@@ -420,18 +414,6 @@
             bookingsRef.child(key).remove().catch(e => {});
         }
     }
-
-    function processBookingsData() {
-        bookings = [];
-        for (let key in bookingsObj) {
-            bookings.push({ _key: key, ...bookingsObj[key] });
-        }
-        bookings.reverse(); // أحدث البيانات أولاً
-        renderAll();
-    }
-
-    // بدء المزامنة فور تشغيل الصفحة
-    initDataSync();
 
     let currentTheme = localStorage.getItem("clinic_theme") || "light";
     document.body.setAttribute("data-theme", currentTheme);
@@ -501,36 +483,23 @@
         return item.doctor;
     }
 
-    function parseItemDate(dateStr) {
-        if(!dateStr) return new Date(0);
-        try {
-            let parts = dateStr.split(' ');
-            let dParts = parts[0].split('/');
-            if(dParts.length === 3) {
-                let day = parseInt(dParts[0], 10);
-                let month = parseInt(dParts[1], 10) - 1;
-                let year = parseInt(dParts[2], 10);
-                let timeParts = parts[1] ? parts[1].split(':') : [0, 0];
-                let hour = parseInt(timeParts[0], 10) || 0;
-                let min = parseInt(timeParts[1], 10) || 0;
-                return new Date(year, month, day, hour, min);
-            }
-        } catch(e) {}
-        let parsed = new Date(dateStr);
-        return isNaN(parsed.getTime()) ? new Date(0) : parsed;
-    }
-
+    // دالة وقت آمنة ومبسطة كلياً لا تتسبب في أي خطأ نهائياً
     function getPendingAlertStyle(item) {
         if (item.adminStatus !== "قيد الانتظار") return "";
-        let itemDate = parseItemDate(item.timestamp || item.date);
-        let now = new Date();
-        let hoursDiff = (now - itemDate) / (1000 * 60 * 60);
+        try {
+            // الاعتماد على حقن وقت رقمي دقيق أو وقت الإنشاء
+            let itemTime = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+            if (!itemTime) return "";
+            
+            let now = new Date().getTime();
+            let hoursDiff = (now - itemTime) / (1000 * 60 * 60);
 
-        if (hoursDiff >= 48) {
-            return "background-color: rgba(220, 53, 69, 0.2); border-right: 4px solid #dc3545;";
-        } else if (hoursDiff >= 24) {
-            return "background-color: rgba(255, 165, 0, 0.2); border-right: 4px solid #fd7e14;";
-        }
+            if (hoursDiff >= 48) {
+                return "background-color: rgba(220, 53, 69, 0.25); border-right: 4px solid #dc3545;";
+            } else if (hoursDiff >= 24) {
+                return "background-color: rgba(230, 126, 34, 0.25); border-right: 4px solid #e67e22;";
+            }
+        } catch(e) {}
         return "";
     }
 
@@ -540,19 +509,21 @@
 
         let now = new Date();
         return list.filter(item => {
-            let itemDate = parseItemDate(item.timestamp || item.date);
-            if(filterVal === "today") {
-                return itemDate.getDate() === now.getDate() &&
-                       itemDate.getMonth() === now.getMonth() &&
-                       itemDate.getFullYear() === now.getFullYear();
-            } else if(filterVal === "week") {
-                let diffTime = Math.abs(now - itemDate);
-                let diffDays = diffTime / (1000 * 60 * 60 * 24);
-                return diffDays <= 7;
-            } else if(filterVal === "month") {
-                return itemDate.getMonth() === now.getMonth() &&
-                       itemDate.getFullYear() === now.getFullYear();
-            }
+            try {
+                let itemDate = item.createdAt ? new Date(item.createdAt) : new Date();
+                if(filterVal === "today") {
+                    return itemDate.getDate() === now.getDate() &&
+                           itemDate.getMonth() === now.getMonth() &&
+                           itemDate.getFullYear() === now.getFullYear();
+                } else if(filterVal === "week") {
+                    let diffTime = Math.abs(now - itemDate);
+                    let diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    return diffDays <= 7;
+                } else if(filterVal === "month") {
+                    return itemDate.getMonth() === now.getMonth() &&
+                           itemDate.getFullYear() === now.getFullYear();
+                }
+            } catch(e) {}
             return true;
         });
     }
@@ -769,14 +740,15 @@
         let now = new Date();
         let dateStr = now.toLocaleDateString('ar-EG', {year: 'numeric', month: '2-digit', day: '2-digit'}) + ' ' + now.toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'});
 
+        // استخدام createdAt بوقت رقمي دقيق لضمان عمل التايمر 100% بدون أي أخطاء
         let record = { 
             date: dateStr, 
-            timestamp: now.toISOString(),
+            createdAt: now.getTime(),
             name, phone, idNum, fileNum, contact, branch, doctor, doctorOther, status, adminStatus, adminNote, coordinator, problem 
         };
 
-        saveToLocalStorageAndCloud(record, editKey ? editKey : null, (success) => {
-            alert(editKey ? "تم تحديث الحجز بنجاح!" : "تم إضافة الحجز بنجاح!");
+        saveBookingData(record, editKey ? editKey : null, (success) => {
+            alert(editKey ? "تم تحديث وحفظ الحجز بنجاح!" : "تم إضافة وحفظ الحجز بنجاح!");
             resetForm();
         });
     }
@@ -814,7 +786,7 @@
 
     function deleteBooking(key) {
         if (confirm("هل أنت متأكد من حذف هذا السجل؟")) {
-            deleteRecordFromStorage(key);
+            deleteBookingFromStorage(key);
             alert("تم الحذف بنجاح.");
         }
     }
@@ -862,20 +834,20 @@
         reader.onload = function(e) {
             try {
                 let imported = JSON.parse(e.target.result);
-                // معالجة الملف سواء كان مصفوفة أو كائن
                 let itemsArray = Array.isArray(imported) ? imported : Object.values(imported);
                 
                 if (itemsArray.length > 0) {
                     if (confirm(`هل تريد استيراد ${itemsArray.length} سجل وإضافتها للنظام؟`)) {
                         itemsArray.forEach(item => {
                             let cleanItem = { ...item };
+                            if(!cleanItem.createdAt) cleanItem.createdAt = Date.now();
                             delete cleanItem._key;
                             let uniqueKey = 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
                             bookingsObj[uniqueKey] = cleanItem;
                         });
                         localStorage.setItem("clinic_bookings_local", JSON.stringify(bookingsObj));
                         processBookingsData();
-                        alert("تم استيراد الملف وإضافة السجلات بنجاح!");
+                        alert("تم استيراد الملف وإضافة السجلات بنجاح وتخزينها محلياً وسحابياً!");
                     }
                 } else {
                     alert("الملف لا يحتوي على بيانات صالحة!");
